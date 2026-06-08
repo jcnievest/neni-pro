@@ -1,0 +1,27 @@
+{
+  "name": "Settings",
+  "type": "object",
+  "properties": {
+    "monthly_goal": {
+      "type": "number",
+      "description": "Meta mensual de ventas"
+    },
+    "whatsapp_phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono de contacto de la vendedora (para cat\u00e1logo p\u00fablico)"
+    },
+    "shop_name": {
+      "type": "string",
+      "description": "Nombre del negocio"
+    },
+    "shop_description": {
+      "type": "string",
+      "description": "Descripci\u00f3n corta del negocio"
+    },
+    "catalog_wa_message": {
+      "type": "string",
+      "description": "Mensaje predeterminado que se env\u00eda por WhatsApp desde el cat\u00e1logo p\u00fablico"
+    }
+  },
+  "required": []
+}

@@ -1,0 +1,120 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "client_id": {
+      "type": "string",
+      "description": "ID del cliente"
+    },
+    "client_name": {
+      "type": "string",
+      "description": "Nombre del cliente"
+    },
+    "client_phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono del cliente"
+    },
+    "items": {
+      "type": "array",
+      "description": "Productos del pedido",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "subtotal": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "total": {
+      "type": "number",
+      "description": "Total del pedido"
+    },
+    "advance": {
+      "type": "number",
+      "description": "Anticipo recibido"
+    },
+    "balance": {
+      "type": "number",
+      "description": "Saldo pendiente"
+    },
+    "total_cost": {
+      "type": "number",
+      "description": "Costo total de los productos"
+    },
+    "delivery_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de entrega"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "apartado",
+        "pendiente_pago",
+        "pagado",
+        "entregado",
+        "cancelado"
+      ],
+      "default": "apartado",
+      "description": "Estatus del pedido"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas del pedido"
+    },
+    "delivered": {
+      "type": "boolean",
+      "default": false,
+      "description": "Si ya se entreg\u00f3"
+    },
+    "payment_plan": {
+      "type": "array",
+      "description": "Plan de pagos del pedido",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "due_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pendiente",
+              "pagado",
+              "vencido"
+            ],
+            "default": "pendiente"
+          },
+          "paid_date": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "client_id",
+    "client_name",
+    "total"
+  ]
+}

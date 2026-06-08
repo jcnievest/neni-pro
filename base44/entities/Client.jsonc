@@ -1,0 +1,39 @@
+{
+  "name": "Client",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del cliente"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Tel\u00e9fono del cliente"
+    },
+    "instagram": {
+      "type": "string",
+      "description": "Usuario de Instagram (sin @)"
+    },
+    "facebook": {
+      "type": "string",
+      "description": "Perfil o liga de Facebook"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas sobre el cliente"
+    },
+    "tag": {
+      "type": "string",
+      "enum": [
+        "frecuente",
+        "nuevo",
+        "debe",
+        "mayorista"
+      ],
+      "description": "Etiqueta del cliente"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

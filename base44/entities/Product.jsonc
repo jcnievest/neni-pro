@@ -1,0 +1,56 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nombre del producto"
+    },
+    "category": {
+      "type": "string",
+      "description": "Categor\u00eda del producto"
+    },
+    "price": {
+      "type": "number",
+      "description": "Precio de venta"
+    },
+    "cost": {
+      "type": "number",
+      "description": "Costo del producto"
+    },
+    "stock": {
+      "type": "number",
+      "description": "Stock disponible"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "URL de la foto del producto"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Notas del producto"
+    },
+    "is_offer": {
+      "type": "boolean",
+      "default": false,
+      "description": "\u00bfEst\u00e1 en oferta?"
+    },
+    "offer_price": {
+      "type": "number",
+      "description": "Precio de oferta"
+    },
+    "offer_description": {
+      "type": "string",
+      "description": "Descripci\u00f3n corta de la oferta"
+    },
+    "offer_expiry": {
+      "type": "string",
+      "format": "date",
+      "description": "Fecha de vigencia de la oferta"
+    }
+  },
+  "required": [
+    "name",
+    "price"
+  ]
+}
