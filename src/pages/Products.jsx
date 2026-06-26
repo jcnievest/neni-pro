@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Pencil, Trash2, Package, Copy, Share2, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "vaul";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import ProductForm from "@/components/products/ProductForm";
 import EmptyState from "@/components/shared/EmptyState";
@@ -130,18 +130,30 @@ export default function Products() {
       )}
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" style={{ WebkitOverflowScrolling: "touch" }}>
+      <Drawer open={showForm} onOpenChange={setShowForm}>
+          <DrawerContent className="max-h-[95vh]">
+            <DrawerHeader>
+              <DrawerTitle>Nuevo producto</DrawerTitle>
+            </DrawerHeader>
+            <div className="overflow-y-auto px-4 pb-8" style={{ WebkitOverflowScrolling: "touch" }}>
           <DialogHeader><DialogTitle>Nuevo producto</DialogTitle></DialogHeader>
           <ProductForm onSubmit={(data) => createMut.mutate(data)} onCancel={() => setShowForm(false)} />
-        </DialogContent>
-      </Dialog>
+          </div>
+          </DrawerContent>
+        </Drawer>
 
       <Dialog open={!!editing} onOpenChange={() => setEditing(null)}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto" style={{ WebkitOverflowScrolling: "touch" }}>
+      <Drawer open={showForm} onOpenChange={setShowForm}>
+          <DrawerContent className="max-h-[95vh]">
+            <DrawerHeader>
+              <DrawerTitle>Nuevo producto</DrawerTitle>
+            </DrawerHeader>
+            <div className="overflow-y-auto px-4 pb-8" style={{ WebkitOverflowScrolling: "touch" }}>
           <DialogHeader><DialogTitle>Editar producto</DialogTitle></DialogHeader>
           {editing && <ProductForm product={editing} onSubmit={(data) => updateMut.mutate({ id: editing.id, data })} onCancel={() => setEditing(null)} />}
-        </DialogContent>
-      </Dialog>
+          </div>
+          </DrawerContent>
+        </Drawer>
 
       <AlertDialog open={!!deleting} onOpenChange={() => setDeleting(null)}>
         <AlertDialogContent>
