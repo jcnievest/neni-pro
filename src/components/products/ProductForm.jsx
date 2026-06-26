@@ -137,10 +137,10 @@ export default function ProductForm({ product, onSubmit, onCancel }) {
       <div className="space-y-2">
         <Label>Foto</Label>
         {form.photo_url && (
-          <img src={form.photo_url} alt="" className="w-full h-40 object-cover rounded-xl mb-2" />
+          <img src={form.photo_url} alt="" className="w-full h-40 object-cover rounded-xl mb-2" style={{ touchAction: "pan-y", pointerEvents: "none" }} />
         )}
-        <label className="block">
-          <div className="border-2 border-dashed border-border rounded-xl p-3 text-center text-sm text-muted-foreground cursor-pointer hover:border-primary transition-colors">
+        <label className="block" style={{ touchAction: "pan-y" }}>
+          <div className="border-2 border-dashed border-border rounded-xl p-3 text-center text-sm text-muted-foreground cursor-pointer hover:border-primary transition-colors" style={{ touchAction: "pan-y" }}>
             {uploading ? "Subiendo foto..." : "Toca para subir foto"}
           </div>
           <input type="file" accept="image/*" className="hidden" onChange={handleImage} />
