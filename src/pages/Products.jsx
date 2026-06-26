@@ -125,38 +125,26 @@ export default function Products() {
                 </div>
               </div>
             </Card>
-          ))}
-        </div>
-      )}
-
-      <Dialog open={showForm} onOpenChange={setShowForm}>
       <Drawer open={showForm} onOpenChange={setShowForm}>
           <DrawerContent className="max-h-[95vh]">
             <DrawerHeader>
               <DrawerTitle>Nuevo producto</DrawerTitle>
             </DrawerHeader>
             <div className="overflow-y-auto px-4 pb-8" style={{ WebkitOverflowScrolling: "touch" }}>
-          <DialogHeader><DialogTitle>Nuevo producto</DialogTitle></DialogHeader>
-          <ProductForm onSubmit={(data) => createMut.mutate(data)} onCancel={() => setShowForm(false)} />
-          </div>
+              <ProductForm onSubmit={(data) => createMut.mutate(data)} onCancel={() => setShowForm(false)} />
+            </div>
           </DrawerContent>
         </Drawer>
-
-      <Dialog open={!!editing} onOpenChange={() => setEditing(null)}>
-      <Drawer open={showForm} onOpenChange={setShowForm}>
+      <Drawer open={!!editing} onOpenChange={() => setEditing(null)}>
           <DrawerContent className="max-h-[95vh]">
             <DrawerHeader>
-              <DrawerTitle>Nuevo producto</DrawerTitle>
+              <DrawerTitle>Editar producto</DrawerTitle>
             </DrawerHeader>
             <div className="overflow-y-auto px-4 pb-8" style={{ WebkitOverflowScrolling: "touch" }}>
-          <DialogHeader><DialogTitle>Editar producto</DialogTitle></DialogHeader>
-          {editing && <ProductForm product={editing} onSubmit={(data) => updateMut.mutate({ id: editing.id, data })} onCancel={() => setEditing(null)} />}
-          </div>
+              {editing && <ProductForm product={editing} onSubmit={(data) => updateMut.mutate({ id: editing.id, data })} onCancel={() => setEditing(null)} />}
+            </div>
           </DrawerContent>
         </Drawer>
-
-      <AlertDialog open={!!deleting} onOpenChange={() => setDeleting(null)}>
-        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar producto?</AlertDialogTitle>
             <AlertDialogDescription>Se eliminará "{deleting?.name}" permanentemente.</AlertDialogDescription>
