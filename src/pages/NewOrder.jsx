@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getClients, getProducts, createClient, createOrder } from "@/api/entities";
+import { getClients, getProducts, createClient, createOrder, createProduct } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +36,7 @@ export default function NewOrder() {
   const [creatingClient, setCreatingClient] = useState(false);
 
   // Step 2 — items (free text lines)
-  const [lines, setLines] = useState([{ desc: "", qty: "1", price: "", cost: "" }]);
+  const [lines, setLines] = useState([{ desc: "", qty: "1", price: "", cost: "", saveTocatalog: false }]);
 
   // Step 3 — totals & date
   const [manualTotal, setManualTotal] = useState("");
@@ -100,8 +100,8 @@ export default function NewOrder() {
     }
   };
 
-  const handleSave = () => {
-    const filledLines = lines.filter((l) => l.desc.trim());
+  const handleSave = async () => {
+    for (const l of filledLines.filter((l) => l.saveTocatalog)) {
     if (!clientName) { toast.error("Elige o escribe el nombre del cliente"); return; }
     if (filledLines.length === 0) { toast.error("Agrega al menos un producto"); return; }
 
@@ -122,7 +122,15 @@ export default function NewOrder() {
       ...p,
       id: p.id || Math.random().toString(36).slice(2, 9),
     }));
-
+// Guardar líneas nuevas en catálogo si se marcó el checkbox
+const linesToSave = filledLines.filter((l) => l.saveToProduct);
+for (const l of filledLines.filter((l) => l.saveToProduct)) {
+  await createProduct({
+    name: l.desc,
+    price: parseFloat(l.price) || 0,
+    cost: parseFloat(l.cost) || 0,
+  });
+}
     createOrderMut.mutate({
       client_id: clientId || null,
       client_name: clientName,
@@ -322,20 +330,31 @@ export default function NewOrder() {
                 </div>
                 {/* Solo mostrar costo si el producto NO viene del catálogo (no tiene cost prefilled) o si está vacío */}
                 {line.desc && (
-                  <div className="flex items-center gap-2 pl-1">
-                    <Input
-                      placeholder="Costo estimado (opcional)"
-                      type="number"
-                      min="0"
-                      value={line.cost}
-                      onChange={(e) => updateLine(i, "cost", e.target.value)}
-                      className="h-7 text-xs text-muted-foreground"
-                    />
-                    {line.price && line.cost && (
-                      <span className="text-xs text-emerald-600 font-medium whitespace-nowrap shrink-0">
-                        Ganas: ${(((parseFloat(line.qty) || 1) * (parseFloat(line.price) || 0)) - ((parseFloat(line.qty) || 1) * (parseFloat(line.cost) || 0))).toLocaleString()}
-                      </span>
-                    )}
+                  <div className="space-y-1.5 pl-1">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Costo estimado (opcional)"
+                        type="number"
+                        min="0"
+                        value={line.cost}
+                        onChange={(e) => updateLine(i, "cost", e.target.value)}
+                        className="h-7 text-xs text-muted-foreground"
+                      />
+                      {line.price && line.cost && (
+                        <span className="text-xs text-emerald-600 font-medium whitespace-nowrap shrink-0">
+                          Ganas: ${(((parseFloat(line.qty) || 1) * (parseFloat(line.price) || 0)) - ((parseFloat(line.qty) || 1) * (parseFloat(line.cost) || 0))).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer w-fit">
+                      <input
+                        type="checkbox"
+                        checked={line.saveTocatalog || false}
+                        onChange={(e) => updateLine(i, "saveTocatalog", e.target.checked)}
+                        className="w-3.5 h-3.5 accent-pink-500"
+                      />
+                      <span className="text-xs text-muted-foreground">Guardar en catálogo</span>
+                    </label>
                   </div>
                 )}
               </div>

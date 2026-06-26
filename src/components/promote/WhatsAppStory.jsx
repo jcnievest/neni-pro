@@ -33,11 +33,22 @@ export default function WhatsAppStory({ product, onClose }) {
     if (!el) return;
     setDownloading(true);
     try {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      const rect = el.getBoundingClientRect();
       const canvas = await html2canvas(el, {
-        scale: 3,
+        scale: 2,
         backgroundColor: null,
         useCORS: true,
+        allowTaint: true,
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
+        width: rect.width,
+        height: rect.height,
+        x: 0,
+        y: 0,
       });
+      document.body.style.overflow = prevOverflow;
       const url = canvas.toDataURL("image/png");
       const slug = (product.name || "producto")
         .toLowerCase()
@@ -50,17 +61,15 @@ export default function WhatsAppStory({ product, onClose }) {
       a.download = `${slug}-estado-whatsapp.png`;
       a.click();
       toast.success("Imagen descargada");
-    } catch {
+    } catch (err) {
       toast.error("No se pudo descargar la imagen");
     } finally {
       setDownloading(false);
     }
   };
-
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center p-0 sm:items-center sm:p-4">
       <div className="bg-background w-full max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <div>
             <h3 className="font-semibold text-sm">Preparar estado de WhatsApp</h3>
@@ -70,31 +79,26 @@ export default function WhatsAppStory({ product, onClose }) {
             <X className="w-4 h-4" />
           </Button>
         </div>
-
         <div className="p-4 space-y-4 overflow-y-auto max-h-[80vh]">
-          {/* Story preview */}
           <div
             ref={previewRef}
             className="mx-auto w-48 rounded-2xl overflow-hidden shadow-lg"
-            style={{ aspectRatio: "9/16", background: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #ffe4e6 100%)" }}
+            style={{ position: "relative", aspectRatio: "9/16", background: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 50%, #ffe4e6 100%)" }}
           >
             <div className="w-full h-full flex flex-col relative">
-              {/* Image zone */}
               <div className="flex-1 flex items-center justify-center bg-white/40">
                 {product.photo_url ? (
-                  <img src={product.photo_url} alt="" className="w-full h-full object-cover" />
+                  <img src={product.photo_url} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" />
                 ) : (
                   <Package className="w-16 h-16 text-primary/40" />
                 )}
               </div>
-              {/* Overlay info */}
               <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-white">
-                {isOffer && (
+                {isOffer ? (
                   <div className="inline-block bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full mb-1">
                     🔥 OFERTA
                   </div>
-                )}
-                {!isOffer && (
+                ) : (
                   <div className="inline-block bg-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full mb-1">
                     ✨ NUEVO
                   </div>
@@ -108,29 +112,14 @@ export default function WhatsAppStory({ product, onClose }) {
               </div>
             </div>
           </div>
-
-          <Button
-            variant="outline"
-            className="w-full h-10"
-            onClick={downloadImage}
-            disabled={downloading}
-          >
+          <Button variant="outline" className="w-full h-10" onClick={downloadImage} disabled={downloading}>
             {downloading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generando imagen...
-              </>
+              <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Generando imagen...</>
             ) : (
-              <>
-                <Download className="w-4 h-4 mr-2" />
-                Descargar imagen
-              </>
+              <><Download className="w-4 h-4 mr-2" />Descargar imagen</>
             )}
           </Button>
-
           <p className="text-[10px] text-center text-muted-foreground">Vista previa 9:16 · Pantalla completa en WhatsApp</p>
-
-          {/* Text editor */}
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">Texto del estado (editable)</label>
             <textarea
@@ -140,23 +129,18 @@ export default function WhatsAppStory({ product, onClose }) {
               className="w-full rounded-xl border border-input bg-card px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
-
-          {/* Links reference */}
           <div className="bg-muted/50 rounded-xl p-3 space-y-1 text-xs">
             <p className="text-muted-foreground">📎 Liga del producto: <span className="text-primary break-all">{productUrl}</span></p>
             <p className="text-muted-foreground">🛍️ Liga del catálogo: <span className="text-primary break-all">{catalogUrl}</span></p>
           </div>
-
-          {/* Actions */}
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" className="h-9" onClick={copy}>
               <Copy className="w-3.5 h-3.5 mr-1" /> Copiar texto
             </Button>
             <Button size="sm" className="h-9 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={openWA}>
-              <WAIcon /> <span className="ml-1">Abrir WhatsApp</span>
+              <WAIcon /><span className="ml-1">Abrir WhatsApp</span>
             </Button>
           </div>
-
           <p className="text-[10px] text-center text-muted-foreground bg-amber-50 rounded-lg p-2">
             💡 Copia el texto, abre WhatsApp, ve a <strong>Estados</strong> y pega el texto al publicar tu imagen.
           </p>
