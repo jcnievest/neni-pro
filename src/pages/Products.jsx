@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search, Pencil, Trash2, Package, Copy, Share2, Tag } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "vaul";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import ProductForm from "@/components/products/ProductForm";
 import EmptyState from "@/components/shared/EmptyState";
@@ -125,26 +125,26 @@ export default function Products() {
                 </div>
               </div>
             </Card>
-      <Drawer open={showForm} onOpenChange={setShowForm}>
-          <DrawerContent className="max-h-[95vh]">
-            <DrawerHeader>
-              <DrawerTitle>Nuevo producto</DrawerTitle>
-            </DrawerHeader>
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+          <DialogContent className="max-h-[95vh]">
+            <DialogHeader>
+              <DialogTitle>Nuevo producto</DialogTitle>
+            </DialogHeader>
             <div className="overflow-y-auto px-4 pb-8" style={{ WebkitOverflowScrolling: "touch" }}>
               <ProductForm onSubmit={(data) => createMut.mutate(data)} onCancel={() => setShowForm(false)} />
             </div>
-          </DrawerContent>
-        </Drawer>
-      <Drawer open={!!editing} onOpenChange={() => setEditing(null)}>
-          <DrawerContent className="max-h-[95vh]">
-            <DrawerHeader>
-              <DrawerTitle>Editar producto</DrawerTitle>
-            </DrawerHeader>
+          </DialogContent>
+        </Dialog>
+      <Dialog open={!!editing} onOpenChange={() => setEditing(null)}>
+          <DialogContent className="max-h-[95vh]">
+            <DialogHeader>
+              <DialogTitle>Editar producto</DialogTitle>
+            </DialogHeader>
             <div className="overflow-y-auto px-4 pb-8" style={{ WebkitOverflowScrolling: "touch" }}>
               {editing && <ProductForm product={editing} onSubmit={(data) => updateMut.mutate({ id: editing.id, data })} onCancel={() => setEditing(null)} />}
             </div>
-          </DrawerContent>
-        </Drawer>
+          </DialogContent>
+        </Dialog>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar producto?</AlertDialogTitle>
             <AlertDialogDescription>Se eliminará "{deleting?.name}" permanentemente.</AlertDialogDescription>
