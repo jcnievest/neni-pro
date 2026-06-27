@@ -64,14 +64,27 @@ export default function PaymentCardModal({ cardData, onClose, clientName, amount
     setDownloading(true);
     const el = document.getElementById("payment-card-preview");
     if (!el) { setDownloading(false); return; }
-    const canvas = await html2canvas(el, { scale: 3, backgroundColor: null, useCORS: true });
-    const url = canvas.toDataURL("image/png");
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "tarjeta-de-cobro.png";
-    a.click();
-    setDownloading(false);
-    toast.success("Imagen descargada");
+    try {
+      const canvas = await html2canvas(el, { scale: 3, backgroundColor: null, useCORS: true });
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], "tarjeta-de-cobro.png", { type: "image/png" });
+        if (navigator.share && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "Tarjeta de cobro" });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "tarjeta-de-cobro.png";
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+        toast.success("¡Lista para guardar en Fotos!");
+      }, "image/png");
+    } catch (err) {
+      toast.error("No se pudo compartir la imagen");
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
