@@ -99,9 +99,7 @@ export default function NewOrder() {
       setLines([...lines, newLine]);
     }
   };
-
   const handleSave = async () => {
-    for (const l of filledLines.filter((l) => l.saveTocatalog)) {
     if (!clientName) { toast.error("Elige o escribe el nombre del cliente"); return; }
     if (filledLines.length === 0) { toast.error("Agrega al menos un producto"); return; }
 
