@@ -100,7 +100,7 @@ export default function NewOrder() {
     }
   };
   const handleSave = async () => {
-    toast.info("Iniciando...");
+
     const filledLines = lines.filter((l) => l.desc.trim());
     if (!clientName) { toast.error("Elige o escribe el nombre del cliente"); return; }
     if (filledLines.length === 0) { toast.error("Agrega al menos un producto"); return; }
