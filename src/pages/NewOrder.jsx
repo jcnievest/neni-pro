@@ -306,7 +306,7 @@ for (const l of filledLines.filter((l) => l.saveToProduct)) {
                   />
                   <Input
                     placeholder="Cant"
-                    type="number"
+                    type="number" inputMode="decimal"
                     min="1"
                     value={line.qty}
                     onChange={(e) => updateLine(i, "qty", e.target.value)}
@@ -314,7 +314,7 @@ for (const l of filledLines.filter((l) => l.saveToProduct)) {
                   />
                   <Input
                     placeholder="Precio $"
-                    type="number"
+                    type="number" inputMode="decimal"
                     min="0"
                     value={line.price}
                     onChange={(e) => updateLine(i, "price", e.target.value)}
@@ -332,7 +332,7 @@ for (const l of filledLines.filter((l) => l.saveToProduct)) {
                     <div className="flex items-center gap-2">
                       <Input
                         placeholder="Costo estimado (opcional)"
-                        type="number"
+                        type="number" inputMode="decimal"
                         min="0"
                         value={line.cost}
                         onChange={(e) => updateLine(i, "cost", e.target.value)}
@@ -397,7 +397,7 @@ for (const l of filledLines.filter((l) => l.saveToProduct)) {
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">$</span>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 min="0"
                 placeholder="0"
                 value={manualTotal !== "" ? manualTotal : autoTotal || ""}
@@ -412,7 +412,7 @@ for (const l of filledLines.filter((l) => l.saveToProduct)) {
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">$</span>
               <Input
-                type="number"
+                type="number" inputMode="decimal"
                 min="0"
                 placeholder="0"
                 value={advance}

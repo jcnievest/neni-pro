@@ -53,12 +53,12 @@ export default function ProductForm({ product, onSubmit, onCancel }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label>Lo vendes en *</Label>
-          <Input type="number" placeholder="0.00" value={form.price}
+          <Input type="number" inputMode="decimal" placeholder="0.00" value={form.price}
             onChange={(e) => setForm({ ...form, price: e.target.value })} required />
         </div>
         <div className="space-y-2">
           <Label>Te cuesta <span className="text-muted-foreground font-normal text-xs">(opcional)</span></Label>
-          <Input type="number" placeholder="0.00" value={form.cost}
+          <Input type="number" inputMode="decimal" placeholder="0.00" value={form.cost}
             onChange={(e) => setForm({ ...form, cost: e.target.value })} />
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function ProductForm({ product, onSubmit, onCancel }) {
         </div>
         <div className="space-y-2">
           <Label>Stock</Label>
-          <Input type="number" placeholder="0" value={form.stock}
+          <Input type="number" inputMode="decimal" placeholder="0" value={form.stock}
             onChange={(e) => setForm({ ...form, stock: e.target.value })} />
         </div>
       </div>
@@ -115,7 +115,7 @@ export default function ProductForm({ product, onSubmit, onCancel }) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">Precio de oferta</Label>
-                <Input type="number" placeholder="0.00" value={form.offer_price}
+                <Input type="number" inputMode="decimal" placeholder="0.00" value={form.offer_price}
                   onChange={(e) => setForm({ ...form, offer_price: e.target.value })} />
               </div>
               <div className="space-y-1">
