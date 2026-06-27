@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Nenis Pro</string>
+    <string name="title_activity_main">Nenis Pro</string>
+    <string name="package_name">com.nenispro.app</string>
+    <string name="custom_url_scheme">com.nenispro.app</string>
+</resources>
