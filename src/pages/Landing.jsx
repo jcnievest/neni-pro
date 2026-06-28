@@ -135,10 +135,10 @@ export default function Landing() {
             Vendes por WhatsApp y a veces se te pierden pedidos o cobros?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto">
-            {["quien te debe", "cuanto falta cobrar", "que pedido esta apartado", "cuando toca entregar", "cuanto ganaste realmente", "que producto puedes promocionar"].map((item) => (
+            {["Quién te debe", "Cuánto falta cobrar", "Qué pedido esta apartado", "Cuándo toca entregar", "Cuánto ganaste realmente", "Qué producto puedes promocionar"].map((item) => (
               <div key={item} className="flex ems-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm">
                 <span className="text-pink-400 font-bold text-lg">?</span>
-                <span className="text-sm text-gray-600 capitalize">{item}</span>
+                <span className="text-sm text-gray-600">{item}</span>
               </div>
             ))}
           </div>
