@@ -11,7 +11,7 @@ export default function Privacidad() {
           <section>
             <h2 className="text-lg font-bold text-gray-800 mb-2">1. Responsable</h2>
             <p>Juan Carlos Nieves Torres (en adelante "Nenis Pro"), con RFC NITJ790930845, con domicilio en Querétaro, Qro., es responsable del tratamiento de sus datos personales conforme a lo establecido en la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP).</p>
-            <p className="mt-2">Conta href="mailto:contacto@nenispro.com" className="text-pink-500">contacto@nenispro.com</a></p>
+            <p className="mt-2">Conta <a href="mailto:contacto@nenispro.com" className="text-pink-500">contacto@nenispro.com</a></p>
           </section>
 
           <section>
