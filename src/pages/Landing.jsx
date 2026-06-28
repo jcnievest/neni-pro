@@ -125,13 +125,7 @@ export default function Landing() {
           <p className="text-xs text-gray-400 mt-4">Gratis para probar. Despues solo $30 al mes.</p>
         </div>
         <div className="hidden md:flex md:flex-1 justify-center">
-          <div className="w-72 h-[500px] bg-gradient-to-br from-pink-100 to-purple-100 rounded-3xl flex items-center justify-center shadow-2xl">
-            <div className="text-center space-y-3 p-8">
-              <div className="text-6xl">📱</div>
-              <p className="text-gray-500 text-sm font-medium">Tu negocio organizado</p>
-              <p className="text-gray-400 text-xs">desde el celular</p>
-            </div>
-          </div>
+          <img src="/imagecover.png" alt="Nenis Pro App" className="w-full max-w-xl rounded-3xl shadow-2xl object-cover" />
         </div>
       </section>
 
