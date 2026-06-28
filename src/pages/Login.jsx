@@ -22,7 +22,7 @@ export default function Login() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate("/");
+      navigate("/pedidos");
     } catch (err) {
       setError(err.message || "Correo o contraseña incorrectos");
     } finally {
@@ -33,7 +33,7 @@ export default function Login() {
   const handleGoogle = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin }
+      options: { redirectTo: window.location.origin + "/pedidos" }
     });
   };
 
