@@ -29,7 +29,7 @@ const faqs = [
   { q: "Puedo usar WhatsApp?", a: "Si. La app genera mensajes listos para copiar y te permite abrir WhatsApp directo." },
   { q: "Puedo registrar pagos por quincena?", a: "Si. Puedes crear planes de pago semanales, quincenales, mensuales o personalizados." },
   { q: "La app revisa si me depositaron?", a: "No. Debes verificar el pago directamente en tu banco." },
- uanto cuesta?", a: "Despues de la prueba gratuita cuesta $30 pesos al mes." },
+  { q: "Cuanto cuesta?", a: "Despues de la prueba gratuita cuesta $30 pesos al mes." },
 ];
 
 const categories = ["ropa", "zapatos", "bolsas", "perfumes", "maquillaje", "skincare", "productos por catalogo", "accesorios", "postres", "regalos", "productos por pedido"];
