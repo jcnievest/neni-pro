@@ -66,7 +66,7 @@ export default function Landing() {
             <a href="#precio" className="hover:text-pink-500">Precio</a>
             <a href="#faqs" className="hover:text-pink-500">Preguntas</a>
             {user ? (
-              <button onClick={() => navigate("/")} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-5 py-2 rounded-full text-sm font-medium">
+              <button onClick={() => navigate("/pedidos")} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-5 py-2 rounded-full text-sm font-medium">
                 Ir a mi cuenta
               </button>
             ) : (
@@ -85,7 +85,7 @@ export default function Landing() {
             <a href="#precio" onClick={() => setMenuOpen(false)} className="text-gray-600">Precio</a>
             <a href="#faqs" onClick={() => setMenuOpen(false)} className="text-gray-600">Preguntas</a>
             {user ? (
-              <button onClick={() => navigate("/")} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full font-medium text-center">
+              <button onClick={() => navigate("/pedidos")} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full font-medium text-center">
                 Ir a mi cuenta
               </button>
             ) : (
