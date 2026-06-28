@@ -100,8 +100,8 @@ export default function Landing() {
         )}
       </header>
 
-      <section className="max-w-6xl mx-auto px-6 pt-16 pb-20 md:flex md:items-center md:gap-16">
-        <div className="md:flex-1 text-center md:text-left">
+      <section className="max-w-6xl mx-auto px-6 pt-8 pb-20 md:flex md:items-center md:gap-16">
+      <div className="md:flex-1 text-center md:text-left md:order-1 order-2">
           <div className="inline-block bg-pink-50 text-pink-600 text-xs font-semibold px-3 py-1 rounded-full mb-4">
             Gratis para probar
           </div>
@@ -124,7 +124,7 @@ export default function Landing() {
           </div>
           <p className="text-xs text-gray-400 mt-4">Gratis para probar. Despues solo $30 al mes.</p>
         </div>
-        <div className="md:flex-1 flex justify-center mt-8 md:mt-0">
+        <div className="md:flex-1 flex justify-center mb-6 md:mb-0 md:order-2 order-1">
           <img src="/imagecover.png" alt="Nenis Pro App" className="w-full max-w-sm md:max-w-xl rounded-3xl shadow-xl object-cover" />
         </div>
       </section>
