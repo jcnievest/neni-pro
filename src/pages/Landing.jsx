@@ -63,7 +63,7 @@ function FAQ({ q, a }) {
   
         {/* HEADER */}
         <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
-          <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-8 py-3 flex items-center justify-between">
             <Logo />
             <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-gray-500">
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -73,13 +73,13 @@ function FAQ({ q, a }) {
               <a href="#precio" className="hover:text-pink-500">Precio</a>
               <a href="#faqs" className="hover:text-pink-500">Preguntas</a>
               {user ? (
-                <button onClick={() => navigate("/")} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium">
+                <button onClick={() => navigate("/")} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-2 rounded-full text-sm font-medium">
                   Ir a mi cuenta
                 </button>
               ) : (
                 <>
                   <Link to="/login" className="text-gray-600">Iniciar sesión</Link>
-                  <Link to="/register" className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full text-sm font-medium">
+                  <Link to="/register" className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-2 rounded-full text-sm font-medium">
                     Probar gratis
                   </Link>
                 </>
@@ -87,18 +87,19 @@ function FAQ({ q, a }) {
             </nav>
           </div>
           {menuOpen && (
-            <div className="md:hidden px-4 pb-4 flex flex-col gap-3 text-sm border-t border-gray-100 pt-3">
+            <div className="md:hidden px-8 pb-4 flex flex-col gap-3 text-sm border-t border-gray-100 pt-3">
+            <div className="md:hidden  pb-4 flex flex-col gap-3 text-sm border-t border-gray-100 pt-3">
               <a href="#funciones" onClick={() => setMenuOpen(false)} className="text-gray-600">Funciones</a>
               <a href="#precio" onClick={() => setMenuOpen(false)} className="text-gray-600">Precio</a>
               <a href="#faqs" onClick={() => setMenuOpen(false)} className="text-gray-600">Preguntas</a>
               {user ? (
-                <button onClick={() => navigate("/")} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full font-medium text-center">
+                <button onClick={() => navigate("/")} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-2 rounded-full font-medium text-center">
                   Ir a mi cuenta
                 </button>
               ) : (
                 <>
                   <Link to="/login" className="text-gray-600 text-center">Iniciar sesión</Link>
-                  <Link to="/register" className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full font-medium text-center">
+                  <Link to="/register" className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-8 py-2 rounded-full font-medium text-center">
                     Probar gratis
                   </Link>
                 </>
@@ -107,7 +108,7 @@ function FAQ({ q, a }) {
           )}
         </header>
         {/* HERO */}
-      <section className="max-w-lg mx-auto px-4 pt-12 pb-16 text-center">
+        <section className="max-w-6xl mx-auto px-8 pt-16 pb-20 text-center">
         <div className="inline-block bg-pink-50 text-pink-600 text-xs font-semibold px-3 py-1 rounded-full mb-4">
           🚀 Gratis para probar
         </div>
@@ -132,8 +133,8 @@ function FAQ({ q, a }) {
       </section>
 
       {/* PROBLEMA */}
-      <section className="bg-gray-50 px-4 py-12">
-        <div className="max-w-lg mx-auto">
+      <section className="bg-gray-50 px-8 py-12">
+        <div className="max-w-6xl mx-auto">
           <h2 className="text-xl font-extrabold text-gray-900 mb-6 text-center">
             ¿Vendes por WhatsApp y a veces se te pierden pedidos o cobros?
           </h2>
@@ -146,7 +147,7 @@ function FAQ({ q, a }) {
               "cuánto ganaste realmente",
               "qué producto puedes promocionar",
             ].map((item) => (
-              <div key={item} className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm">
+              <div key={item} className="flex items-center gap-3 bg-white rounded-xl px-8 py-3 shadow-sm">
                 <span className="text-pink-400 font-bold text-lg">?</span>
                 <span className="text-sm text-gray-600">¿{item.charAt(0).toUpperCase() + item.slice(1)}?</span>
               </div>
@@ -157,10 +158,10 @@ function FAQ({ q, a }) {
       </section>
 
       {/* FUNCIONES */}
-      <section id="funciones" className="max-w-lg mx-auto px-4 py-12">
+      <section id="funciones" className="max-w-lg mx-auto px-8 py-12">
         <h2 className="text-xl font-extrabold text-gray-900 mb-2 text-center">Todo lo que necesitas</h2>
         <p className="text-sm text-gray-400 text-center mb-8">Funciones pensadas para vendedoras como tú</p>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {features.map((f) => (
             <div key={f.title} className="bg-gray-50 rounded-2xl p-4 space-y-1">
               <div className="text-2xl">{f.icon}</div>
@@ -171,8 +172,8 @@ function FAQ({ q, a }) {
         </div>
       </section>
       {/* NO REEMPLAZA WHATSAPP */}
-      <section className="bg-gradient-to-br from-pink-50 to-purple-50 px-4 py-12">
-        <div className="max-w-lg mx-auto text-center">
+      <section className="bg-gradient-to-br from-pink-50 to-purple-50 px-8 py-12">
+        <div className="max-w-6xl mx-auto text-center">
           <div className="text-4xl mb-4">💬</div>
           <h2 className="text-xl font-extrabold text-gray-900 mb-3">
             No reemplaza WhatsApp. Te ayuda a vender mejor.
@@ -184,7 +185,7 @@ function FAQ({ q, a }) {
       </section>
 
       {/* CASOS DE USO */}
-      <section className="max-w-lg mx-auto px-4 py-12">
+      <section className="max-w-6xl mx-auto px-8 py-12">
         <h2 className="text-xl font-extrabold text-gray-900 mb-6 text-center">Ideal para quienes venden…</h2>
         <div className="flex flex-wrap gap-2 justify-center">
           {categories.map((cat) => (
@@ -196,8 +197,8 @@ function FAQ({ q, a }) {
       </section>
 
       {/* PRECIO */}
-      <section id="precio" className="bg-gray-50 px-4 py-12">
-        <div className="max-w-lg mx-auto text-center">
+      <section id="precio" className="bg-gray-50 px-8 py-12">
+        <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-xl font-extrabold text-gray-900 mb-2">Precio simple</h2>
           <div className="bg-white rounded-3xl p-8 shadow-sm mt-6 space-y-4">
             <div className="text-5xl font-extrabold" style={{ background: "linear-gradient(135deg, #e0478a, #7c3aed)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -214,7 +215,7 @@ function FAQ({ q, a }) {
       </section>
 
       {/* FAQS */}
-      <section id="faqs" className="max-w-lg mx-auto px-4 py-12">
+      <section id="faqs" className="max-w-6xl mx-auto px-8 py-12">
         <h2 className="text-xl font-extrabold text-gray-900 mb-6 text-center">Preguntas frecuentes</h2>
         <div className="space-y-2">
           {faqs.map((faq) => (
@@ -224,8 +225,8 @@ function FAQ({ q, a }) {
       </section>
 
       {/* CTA FINAL */}
-      <section className="bg-gradient-to-br from-pink-500 to-purple-600 px-4 py-16">
-        <div className="max-w-lg mx-auto text-center space-y-6">
+      <section className="bg-gradient-to-br from-pink-500 to-purple-600 px-8 py-16">
+        <div className="max-w-6xl mx-auto text-center space-y-6">
           <h2 className="text-2xl font-extrabold text-white leading-tight">
             Que no se te pierda ningún pedido, cobro ni ganancia
           </h2>
@@ -237,8 +238,8 @@ function FAQ({ q, a }) {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-gray-900 px-4 py-8">
-        <div className="max-w-lg mx-auto space-y-4">
+      <footer className="bg-gray-900 px-8 py-8">
+        <div className="max-w-6xl mx-auto space-y-4">
           <Logo />
           <div className="flex flex-wrap gap-3 text-xs text-gray-400">
             <a href="#" className="hover:text-white">Aviso de privacidad</a>
