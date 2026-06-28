@@ -6,6 +6,8 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Landing from "@/pages/Landing";
+import Privacidad from "@/pages/Privacidad";
+import Terminos from "@/pages/Terminos";
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -58,6 +60,8 @@ const AuthenticatedApp = () => {
           <Route path="/promocionar" element={<Promote />} />
         </Route>
       </Route>
+      <Route path="/privacidad" element={<Privacidad />} />
+      <Route path="/terminos" element={<Terminos />} />
       <Route path="/catalogo" element={<Catalog />} />
       <Route path="/producto/:id" element={<ProductPublic />} />
       <Route path="*" element={<PageNotFound />} />
