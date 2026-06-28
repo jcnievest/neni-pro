@@ -225,8 +225,8 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <Logo />
           <div className="flex flex-wrap gap-4 text-xs text-gray-400">
-            <a href="#" className="hover:text-white">Aviso de privacidad</a>
-            <a href="#" className="hover:text-white">Terminos y condiciones</a>
+          <Link to="/privacidad" className="hover:text-white">Aviso de privacidad</Link>
+          <Link to="/terminos" className="hover:text-white">Terminos y condiciones</Link>
             <a href="#" className="hover:text-white">Contacto</a>
             <Link to="/login" className="hover:text-white">Iniciar sesion</Link>
           </div>
