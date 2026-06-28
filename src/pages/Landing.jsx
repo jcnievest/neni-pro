@@ -58,8 +58,8 @@ export default function Landing() {
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <Logo />
-          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-gray-500">
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-gray-500 p-3 -mr-3 touch-manipulation">
+          {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
           <nav className="hidden md:flex items-center gap-6 text-sm text-gray-600">
             <a href="#funciones" className="hover:text-pink-500">Funciones</a>
