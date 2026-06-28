@@ -124,8 +124,8 @@ export default function Landing() {
           </div>
           <p className="text-xs text-gray-400 mt-4">Gratis para probar. Despues solo $30 al mes.</p>
         </div>
-        <div className="hidden md:flex md:flex-1 justify-center">
-          <img src="/imagecover.png" alt="Nenis Pro App" className="w-full max-w-xl rounded-3xl shadow-2xl object-cover" />
+        <div className="md:flex-1 flex justify-center mt-8 md:mt-0">
+          <img src="/imagecover.png" alt="Nenis Pro App" className="w-full max-w-sm md:max-w-xl rounded-3xl shadow-xl object-cover" />
         </div>
       </section>
 
