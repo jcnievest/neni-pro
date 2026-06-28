@@ -135,12 +135,12 @@ export default function Landing() {
             Vendes por WhatsApp y a veces se te pierden pedidos o cobros?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto">
-            {["Quién te debe", "Cuánto falta cobrar", "Qué pedido esta apartado", "Cuándo toca entregar", "Cuánto ganaste realmente", "Qué producto puedes promocionar"].map((item) => (
-              <div key={item} className="flex ems-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm">
-                <span className="text-pink-400 font-bold text-lg">?</span>
-                <span className="text-sm text-gray-600">{item}</span>
-              </div>
-            ))}
+          {["¿Quién te debe?", "¿Cuánto falta cobrar?", "¿Qué pedido está apartado?", "¿Cuándo toca entregar?", "¿Cuánto ganaste realmente?", "¿Qué producto puedes promocionar?"].map((item) => (
+  <div key={item} className="flex items-center gap-3 bg-white rounded-xl px-4 py-3 shadow-sm">
+    <span className="text-pink-400 font-bold text-lg">•</span>
+    <span className="text-sm text-gray-600">{item}</span>
+  </div>
+))}
           </div>
           <p className="text-center text-sm text-gray-400 mt-6">Nenis Pro te ayuda a tener todo eso claro.</p>
         </div>
