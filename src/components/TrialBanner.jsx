@@ -52,7 +52,7 @@ export default function TrialBanner() {
               <p className="text-xs text-amber-600 mt-0.5">Suscribete por $30/mes para no perder el acceso.</p>
             </>
           )}
-          
+          <a
             href={MP_LINK}
             target="_blank"
             rel="noopener noreferrer"
