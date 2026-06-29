@@ -41,24 +41,24 @@ export default function TrialBanner() {
         <div className="flex-1">
           {expired ? (
             <>
-              <p className="font-bold text-sm text-rose-700">Tu prueba gratuita terminó</p>
-              <p className="text-xs text-rose-600 mt-0.5">Suscríbete por $30/mes para seguir usando Nenis Pro.</p>
+              <p className="font-bold text-sm text-rose-700">Tu prueba gratuita termino</p>
+              <p className="text-xs text-rose-600 mt-0.5">Suscribete por $30/mes para seguir usando Nenis Pro.</p>
             </>
           ) : (
             <>
               <p className="font-bold text-sm text-amber-700">
-                {daysLeft === 1 ? "¡Último día de prueba!" : `Te quedan ${daysLeft} días de prueba`}
+                {daysLeft === 1 ? "Ultimo dia de prueba!" : `Te quedan ${daysLeft} dias de prueba`}
               </p>
-              <p className="text-xs text-amber-600 mt-0.5">Suscríbete por $30/mes para no perder el acceso.</p>
+              <p className="text-xs text-amber-600 mt-0.5">Suscribete por $30/mes para no perder el acceso.</p>
             </>
           )}
           
-     href={MP_LINK}
+            href={MP_LINK}
             target="_blank"
             rel="noopener noreferrer"
             className={`inline-block mt-2 px-4 py-1.5 rounded-full text-xs font-bold text-white ${expired ? "bg-rose-500" : "bg-amber-500"}`}
           >
-            Suscribirme ahora →
+            Suscribirme ahora
           </a>
         </div>
         {!expired && (
