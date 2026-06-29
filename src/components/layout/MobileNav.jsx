@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Home, Users, Package, ShoppingBag, DollarSign, Truck, MessageSquare, BarChart3 } from "lucide-react";
 
 const navItems = [
-  { path: "/pedidos", icon: Home, label: "Inicio" },
+  { path: "/inicio", icon: Home, label: "Inicio" },
   { path: "/pedidos", icon: ShoppingBag, label: "Pedidos" },
   { path: "/cobros", icon: DollarSign, label: "Cobros" },
   { path: "/entregas", icon: Truck, label: "Entregas" },
