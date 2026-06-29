@@ -92,7 +92,7 @@ export default function NewOrder() {
 
   const selectProduct = (p) => {
     const emptyIdx = lines.findIndex((l) => !l.desc && !l.price);
-    const newLine = { desc: p.name, qty: "1", price: String(p.price), cost: p.cost != null ? String(p.cost) : "" };
+    const newLine = { desc: p.name, qty: "1", price: String(p.price), cost: p.cost != null ? String(p.cost) : "", product_id: p.id, saveTocatalog: false };
     if (emptyIdx >= 0) {
       setLines(lines.map((l, i) => i === emptyIdx ? newLine : l));
     } else {
@@ -107,6 +107,7 @@ export default function NewOrder() {
 
     const items = filledLines.map((l) => ({
       product_name: l.desc,
+      product_id: l.product_id || null,
       quantity: parseFloat(l.qty) || 1,
       unit_price: parseFloat(l.price) || 0,
       unit_cost: parseFloat(l.cost) || 0,
