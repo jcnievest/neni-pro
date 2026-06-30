@@ -172,6 +172,9 @@ export default function NewOrder() {
     return true;
   };
 
+  const currentStockIssue = getStockIssue(lines);
+  const visibleStockError = stockError || currentStockIssue?.message || "";
+
   const handleSave = async () => {
 
     const filledLines = lines.filter((l) => l.desc.trim());
@@ -351,9 +354,9 @@ for (const l of linesToSave) {
             <p className="text-sm text-muted-foreground">Agrega los productos o escríbelos a mano</p>
           </div>
 
-          {stockError && (
+          {visibleStockError && (
             <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
-              {stockError}
+              {visibleStockError}
             </div>
           )}
 
@@ -369,7 +372,7 @@ for (const l of linesToSave) {
                     onClick={() => selectProduct(p)}
                     className="text-xs px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground transition-colors font-medium"
                   >
-                    {p.name} · ${p.price?.toLocaleString()}
+                    {p.name} · ${p.price?.toLocaleString()}{p.stock != null ? ` · Stock: ${p.stock}` : ""}
                   </button>
                 ))}
               </div>
@@ -560,6 +563,12 @@ for (const l of linesToSave) {
             </div>
           )}
 
+          {visibleStockError && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+              {visibleStockError}
+            </div>
+          )}
+
           {/* Summary */}
           <div className="bg-muted/60 rounded-xl p-4 space-y-2">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Resumen del pedido</p>
@@ -577,7 +586,7 @@ for (const l of linesToSave) {
               disabled={createOrderMut.isPending || displayTotal <= 0}
               onClick={handleSave}
             >
-              {createOrderMut.isPending ? "Guardando..." : "💾 Guardar pedido"}
+              {createOrderMut.isPending ? "Guardando..." : visibleStockError ? "Revisar stock" : "💾 Guardar pedido"}
             </Button>
           </div>
         </div>
