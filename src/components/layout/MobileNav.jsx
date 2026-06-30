@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Users, Package, ShoppingBag, DollarSign, Truck, MessageSquare, BarChart3 } from "lucide-react";
+import { Home, ShoppingBag, DollarSign, Truck } from "lucide-react";
 
 const navItems = [
   { path: "/inicio", icon: Home, label: "Inicio" },

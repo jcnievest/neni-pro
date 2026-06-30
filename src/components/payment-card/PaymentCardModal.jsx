@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, X, Share2 } from "lucide-react";
+import { Copy, Download, X } from "lucide-react";
 import { toast } from "sonner";
 import PaymentCardPreview from "./PaymentCardPreview";
 import html2canvas from "html2canvas";

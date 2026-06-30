@@ -20,10 +20,14 @@ Any change pushed to the repo will also be reflected in the Base44 Builder.
 ```
 VITE_BASE44_APP_ID=your_app_id
 VITE_BASE44_APP_BASE_URL=your_backend_url
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 e.g.
 VITE_BASE44_APP_ID=cbef744a8545c389ef439ea6
 VITE_BASE44_APP_BASE_URL=https://my-to-do-list-81bfaad7.base44.app
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your_anon_key
 ```
 
 Run the app: `npm run dev`

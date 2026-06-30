@@ -17,22 +17,22 @@ const features = [
   { icon: "💰", title: "Cobros bajo control", desc: "Sabe quién te debe, cuánto falta y cuándo cobrar." },
   { icon: "📅", title: "Plan de pagos", desc: "Divide cobros en semanas, quincenas o meses." },
   { icon: "🛍️", title: "Catálogo para compartir", desc: "Comparte tu catálogo por link sin necesidad de app." },
-  { ic: "Promocionar productos", desc: "Genera imágenes listas para estados de WhatsApp." },
+  { icon: "📣", title: "Promocionar productos", desc: "Genera imágenes listas para estados de WhatsApp." },
   { icon: "📊", title: "Ganancia estimada", desc: "Sabe cuánto ganas por producto y por pedido." },
   { icon: "💳", title: "Tarjeta de cobro", desc: "Comparte tus datos bancarios de forma profesional." },
   { icon: "💬", title: "Mensajes para WhatsApp", desc: "Genera mensajes listos para copiar y enviar." },
 ];
 
 const faqs = [
-  { q: "Nenis Pro cobra mis ventas?", a: "No. Solo organiza tus ventas. No procesa pagos entre tu y tus clientas." },
-  { q: "Mis clientas tienen que descargar la app?", a: "No. Pueden ver tu catalogo o productos desde un link." },
-  { q: "Puedo usar WhatsApp?", a: "Si. La app genera mensajes listos para copiar y te permite abrir WhatsApp directo." },
-  { q: "Puedo registrar pagos por quincena?", a: "Si. Puedes crear planes de pago semanales, quincenales, mensuales o personalizados." },
-  { q: "La app revisa si me depositaron?", a: "No. Debes verificar el pago directamente en tu banco." },
-  { q: "Cuanto cuesta?", a: "Despues de la prueba gratuita cuesta $30 pesos al mes." },
+  { q: "¿Nenis Pro cobra mis ventas?", a: "No. Solo organiza tus ventas. No procesa pagos entre tú y tus clientas." },
+  { q: "¿Mis clientas tienen que descargar la app?", a: "No. Pueden ver tu catálogo o productos desde un link." },
+  { q: "¿Puedo usar WhatsApp?", a: "Sí. La app genera mensajes listos para copiar y te permite abrir WhatsApp directo." },
+  { q: "¿Puedo registrar pagos por quincena?", a: "Sí. Puedes crear planes de pago semanales, quincenales, mensuales o personalizados." },
+  { q: "¿La app revisa si me depositaron?", a: "No. Debes verificar el pago directamente en tu banco." },
+  { q: "¿Cuánto cuesta?", a: "Después de la prueba gratuita cuesta $30 pesos al mes." },
 ];
 
-const categories = ["ropa", "zapatos", "bolsas", "perfumes", "maquillaje", "skincare", "productos por catalogo", "accesorios", "postres", "regalos", "productos por pedido"];
+const categories = ["ropa", "zapatos", "bolsas", "perfumes", "maquillaje", "skincare", "productos por catálogo", "accesorios", "postres", "regalos", "productos por pedido"];
 
 function FAQ({ q, a }) {
   const [open, setOpen] = useState(false);
@@ -71,7 +71,7 @@ export default function Landing() {
               </button>
             ) : (
               <>
-                <Link to="/login" className="text-gray-600 hover:text-pink-500">Iniciar sesion</Link>
+                <Link to="/login" className="text-gray-600 hover:text-pink-500">Iniciar sesión</Link>
                 <Link to="/register" className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-5 py-2 rounded-full text-sm font-medium">
                   Probar gratis
                 </Link>
@@ -90,7 +90,7 @@ export default function Landing() {
               </button>
             ) : (
               <>
-                <Link to="/login" className="text-gray-600 text-center">Iniciar sesion</Link>
+                <Link to="/login" className="text-gray-600 text-center">Iniciar sesión</Link>
                 <Link to="/register" className="bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2 rounded-full font-medium text-center">
                   Probar gratis
                 </Link>
@@ -106,7 +106,7 @@ export default function Landing() {
             Gratis para probar
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
-            Organiza tus ventas, cobra mejor y sabe cuanto ganas
+            Organiza tus ventas, cobra mejor y sabe cuánto ganas
           </h1>
           <p className="text-gray-500 text-base md:text-lg mb-2">
             La libreta digital para mujeres que venden por WhatsApp, Facebook e Instagram.
@@ -119,10 +119,10 @@ export default function Landing() {
               Probar gratis
             </Link>
             <Link to="/login" className="border border-gray-200 text-gray-600 py-4 px-8 rounded-2xl font-medium text-base text-center">
-              Iniciar sesion
+              Iniciar sesión
             </Link>
           </div>
-          <p className="text-xs text-gray-400 mt-4">Gratis para probar. Despues solo $30 al mes.</p>
+          <p className="text-xs text-gray-400 mt-4">Gratis para probar. Después solo $30 al mes.</p>
         </div>
         <div className="md:flex-1 flex justify-center mb-6 md:mb-0 md:order-2 order-1">
           <img src="/imagecover.png" alt="Nenis Pro App" className="w-full max-w-sm md:max-w-xl rounded-3xl shadow-xl object-cover" />
@@ -132,7 +132,7 @@ export default function Landing() {
       <section className="bg-gray-50 px-6 py-16">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-8 text-center">
-            Vendes por WhatsApp y a veces se te pierden pedidos o cobros?
+            ¿Vendes por WhatsApp y a veces se te pierden pedidos o cobros?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto">
           {["¿Quién te debe?", "¿Cuánto falta cobrar?", "¿Qué pedido está apartado?", "¿Cuándo toca entregar?", "¿Cuánto ganaste realmente?", "¿Qué producto puedes promocionar?"].map((item) => (
@@ -148,7 +148,7 @@ export default function Landing() {
 
       <section id="funciones" className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2 text-center">Todo lo que necesitas</h2>
-        <p className="text-sm text-gray-400 text-center mb-10">Funciones pensadas para vendedoras como tu</p>
+        <p className="text-sm text-gray-400 text-center mb-10">Funciones pensadas para vendedoras como tú</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {features.map((f) => (
             <div key={f.title} className="bg-gray-50 rounded-2xl p-5 space-y-2 hover:shadow-md transition-shadow">
@@ -167,14 +167,14 @@ export default function Landing() {
             No reemplaza WhatsApp. Te ayuda a vender mejor.
           </h2>
           <p className="text-sm md:text-base text-gray-500 leading-relaxed">
-            WhatsApp sigue siendo tu canal de venta. Nenis Pro es tu libreta digital para controlar lo que pasa despues: pedidos, cobros, entregas y ganancias.
+            WhatsApp sigue siendo tu canal de venta. Nenis Pro es tu libreta digital para controlar lo que pasa después: pedidos, cobros, entregas y ganancias.
           </p>
         </div>
       </section>
 
       <section className="max-w-6xl mx-auto px-6 py-16">
         <h2 className="text-2xl font-extrabold text-gray-900 mb-6 text-center">Ideal para quienes venden...</h2>
-        <div className="flex flex-wp gap-2 justify-center">
+        <div className="flex flex-wrap gap-2 justify-center">
           {categories.map((cat) => (
             <span key={cat} className="bg-pink-50 text-pink-600 text-xs font-medium px-4 py-2 rounded-full capitalize">
               {cat}
@@ -195,7 +195,7 @@ export default function Landing() {
             <Link to="/register" className="block bg-gradient-to-r from-pink-500 to-purple-600 text-white py-4 rounded-2xl font-bold text-base shadow-lg shadow-pink-200 mt-4">
               Probar gratis
             </Link>
-            <p className="text-xs text-gray-400">7 dias gratis, sin tarjeta.</p>
+            <p className="text-xs text-gray-400">7 días gratis, sin tarjeta.</p>
           </div>
         </div>
       </section>
@@ -212,12 +212,12 @@ export default function Landing() {
       <section className="bg-gradient-to-br from-pink-500 to-purple-600 px-6 py-20">
         <div className="max-w-2xl mx-auto text-center space-y-6">
           <h2 className="text-2xl md:text-4xl font-extrabold text-white leading-tight">
-            Que no se te pierda ningun pedido, cobro ni ganancia
+            Que no se te pierda ningún pedido, cobro ni ganancia
           </h2>
           <Link to="/register" className="inline-block bg-white text-pink-600 py-4 px-10 rounded-2xl font-bold text-base shadow-lg">
             Probar gratis
           </Link>
-          <p className="text-pink-100 text-xs">7 dias gratis. Despues $30/mes. Cancela cuando quieras.</p>
+          <p className="text-pink-100 text-xs">7 días gratis. Después $30/mes. Cancela cuando quieras.</p>
         </div>
       </section>
 
@@ -226,9 +226,9 @@ export default function Landing() {
           <Logo />
           <div className="flex flex-wrap gap-4 text-xs text-gray-400">
           <Link to="/privacidad" className="hover:text-white">Aviso de privacidad</Link>
-          <Link to="/terminos" className="hover:text-white">Terminos y condiciones</Link>
+          <Link to="/terminos" className="hover:text-white">Términos y condiciones</Link>
             <a href="#" className="hover:text-white">Contacto</a>
-            <Link to="/login" className="hover:text-white">Iniciar sesion</Link>
+            <Link to="/login" className="hover:text-white">Iniciar sesión</Link>
           </div>
           <p className="text-xs text-gray-600">2026 Nenis Pro</p>
         </div>

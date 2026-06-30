@@ -1,4 +1,3 @@
-import { useRef } from "react";
 
 const colorThemes = {
   rose: { from: "#e11d48", to: "#be123c", accent: "#fda4af", text: "white" },
