@@ -13,6 +13,10 @@ function buildStockError(productName, available, requested) {
   return `No hay suficiente stock de ${productName}. Disponible: ${available}. Solicitado: ${requested}.`;
 }
 
+function normalizeProductName(name = "") {
+  return name.trim().toLowerCase();
+}
+
 // Step indicator
 function Step({ number, label, active, done }) {
   return (
@@ -104,11 +108,21 @@ export default function NewOrder() {
   const removeLine = (i) => setLines(lines.filter((_, idx) => idx !== i));
   const updateLine = (i, field, val) => setLines(lines.map((l, idx) => idx === i ? { ...l, [field]: val } : l));
 
-  const getLineProduct = (line) => products.find((p) => p.id === line.product_id);
+  const getLineProduct = (line) => {
+    if (line.product_id) {
+      return products.find((p) => p.id === line.product_id);
+    }
+
+    const typedName = normalizeProductName(line.desc);
+    if (!typedName) return null;
+
+    return products.find((p) => normalizeProductName(p.name) === typedName);
+  };
 
   const getRequestedQuantity = (productId, sourceLines = lines) =>
     sourceLines.reduce((sum, line) => {
-      if (line.product_id !== productId) return sum;
+      const product = getLineProduct(line);
+      if (product?.id !== productId) return sum;
       return sum + (parseFloat(line.qty) || 1);
     }, 0);
 
@@ -116,11 +130,13 @@ export default function NewOrder() {
     const requestedByProduct = new Map();
 
     for (const line of sourceLines.filter((l) => l.desc.trim())) {
-      if (!line.product_id) continue;
+      const product = getLineProduct(line);
+      if (!product) continue;
+
       const quantity = parseFloat(line.qty) || 1;
-      const current = requestedByProduct.get(line.product_id) || { quantity: 0, name: line.desc };
+      const current = requestedByProduct.get(product.id) || { quantity: 0, name: product.name };
       current.quantity += quantity;
-      requestedByProduct.set(line.product_id, current);
+      requestedByProduct.set(product.id, current);
     }
 
     for (const [productId, requested] of requestedByProduct) {
@@ -182,14 +198,17 @@ export default function NewOrder() {
     if (filledLines.length === 0) { toast.error("Agrega al menos un producto"); return; }
     if (!validateStock(filledLines)) return;
 
-    const items = filledLines.map((l) => ({
-      product_name: l.desc,
-      product_id: l.product_id || null,
-      quantity: parseFloat(l.qty) || 1,
-      unit_price: parseFloat(l.price) || 0,
-      unit_cost: parseFloat(l.cost) || 0,
-      subtotal: (parseFloat(l.qty) || 1) * (parseFloat(l.price) || 0),
-    }));
+    const items = filledLines.map((l) => {
+      const product = getLineProduct(l);
+      return {
+        product_name: product?.name || l.desc,
+        product_id: l.product_id || product?.id || null,
+        quantity: parseFloat(l.qty) || 1,
+        unit_price: parseFloat(l.price) || 0,
+        unit_cost: parseFloat(l.cost) || 0,
+        subtotal: (parseFloat(l.qty) || 1) * (parseFloat(l.price) || 0),
+      };
+    });
 
     const totalCostCalc = items.reduce((s, i) => s + (i.unit_cost || 0) * i.quantity, 0);
     const adv = parseFloat(advance) || 0;
@@ -384,7 +403,7 @@ for (const l of linesToSave) {
             {lines.map((line, i) => {
               const lineProduct = getLineProduct(line);
               const lineStock = lineProduct?.stock;
-              const totalRequested = line.product_id ? getRequestedQuantity(line.product_id) : 0;
+              const totalRequested = lineProduct ? getRequestedQuantity(lineProduct.id) : 0;
               const hasStockIssue = lineStock != null && totalRequested > Number(lineStock);
 
               return (
