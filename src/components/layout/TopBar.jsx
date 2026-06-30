@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, Users, Package, MessageSquare, BarChart3, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,15 @@ const pageTitles = {
 export default function TopBar() {
   const location = useLocation();
   const { logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
   const title = pageTitles[location.pathname] || "Neni Pro";
+  const menuId = "topbar-mobile-menu";
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  const closeMenu = () => setMenuOpen(false);
 
   return (
     <header className="sticky top-0 bg-card/80 backdrop-blur-lg border-b border-border z-40">
@@ -33,35 +42,45 @@ export default function TopBar() {
         <h1 className="text-lg font-display font-bold text-foreground tracking-tight">
           {title}
         </h1>
-        <DropdownMenu>
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
+              aria-expanded={menuOpen}
+              aria-controls={menuId}
+              className={`rounded-full transition-colors focus-visible:ring-primary ${
+                menuOpen ? "bg-primary/10 text-primary" : "text-foreground"
+              }`}
+            >
               <Menu className="w-5 h-5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent id={menuId} align="end" className="w-48">
             <DropdownMenuItem asChild>
-              <Link to="/clientes" className="flex items-center gap-2">
+              <Link to="/clientes" onClick={closeMenu} className="flex items-center gap-2">
                 <Users className="w-4 h-4" /> Clientes
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/productos" className="flex items-center gap-2">
+              <Link to="/productos" onClick={closeMenu} className="flex items-center gap-2">
                 <Package className="w-4 h-4" /> Productos
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/mensajes" className="flex items-center gap-2">
+              <Link to="/mensajes" onClick={closeMenu} className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" /> Mensajes rápidos
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link to="/reporte" className="flex items-center gap-2">
+              <Link to="/reporte" onClick={closeMenu} className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4" /> Reporte
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => logout()} className="text-destructive">
+            <DropdownMenuItem onClick={() => { closeMenu(); logout(); }} className="text-destructive">
               <LogOut className="w-4 h-4 mr-2" /> Cerrar sesión
             </DropdownMenuItem>
           </DropdownMenuContent>
