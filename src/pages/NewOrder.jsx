@@ -104,6 +104,7 @@ export default function NewOrder() {
     const filledLines = lines.filter((l) => l.desc.trim());
     if (!clientName) { toast.error("Elige o escribe el nombre del cliente"); return; }
     if (filledLines.length === 0) { toast.error("Agrega al menos un producto"); return; }
+    toast.info("lines: " + JSON.stringify(filledLines.map(l => ({desc: l.desc, pid: l.product_id}))));
     for (const l of filledLines) {
       toast.info("revisando: " + l.desc + " id: " + l.product_id);
       if (l.product_id) {
