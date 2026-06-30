@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 
@@ -39,7 +39,8 @@ export default function Login() {
 
   return (
     <AuthLayout
-      icon={LogIn}
+      iconSrc="/icons/icon-192x192.png"
+      iconAlt="Nenis Pro"
       title="Bienvenida de nuevo"
       subtitle="Inicia sesión en tu cuenta"
       footer={
