@@ -105,10 +105,12 @@ export default function NewOrder() {
     if (!clientName) { toast.error("Elige o escribe el nombre del cliente"); return; }
     if (filledLines.length === 0) { toast.error("Agrega al menos un producto"); return; }
     for (const l of filledLines) {
+      toast.info("revisando: " + l.desc + " id: " + l.product_id);
       if (l.product_id) {
         const product = products.find((p) => p.id === l.product_id);
+        toast.info("stock: " + product?.stock + " qty: " + l.qty);
         if (product && product.stock != null && product.stock < (parseFloat(l.qty) || 1)) {
-          toast.error(`Sin stock suficiente de "${l.desc}". Disponible: ${product.stock}`);
+          toast.error("Sin stock suficiente de " + l.desc + ". Disponible: " + product.stock);
           return;
         }
       }
