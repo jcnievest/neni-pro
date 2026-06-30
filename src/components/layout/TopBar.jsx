@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, Users, Package, MessageSquare, BarChart3, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,19 +43,17 @@ export default function TopBar() {
         </h1>
         <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
           <DropdownMenuTrigger asChild>
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
               aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
               aria-expanded={menuOpen}
               aria-controls={menuId}
-              className={`rounded-full transition-colors focus-visible:ring-primary ${
-                menuOpen ? "bg-primary/10 text-primary" : "text-foreground"
+              className={`inline-flex h-11 w-11 shrink-0 touch-manipulation select-none items-center justify-center rounded-full bg-primary/10 text-primary transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                menuOpen ? "ring-1 ring-primary/20" : ""
               }`}
             >
-              <Menu className="w-5 h-5" />
-            </Button>
+              <Menu className="h-5 w-5 shrink-0" />
+            </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent id={menuId} align="end" className="w-48">
             <DropdownMenuItem asChild>
