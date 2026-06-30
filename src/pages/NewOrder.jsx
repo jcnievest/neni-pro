@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getClients, getProducts, createClient, createOrder, createProduct } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
@@ -48,6 +48,7 @@ export default function NewOrder() {
   const [deliveryDate, setDeliveryDate] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentPlan, setPaymentPlan] = useState([]);
+  const [stockError, setStockError] = useState("");
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients"],
@@ -80,7 +81,12 @@ export default function NewOrder() {
       navigate("/pedidos");
     },
     onError: (error) => {
-      toast.error(error.message || "No se pudo guardar el pedido");
+      const message = error.message || "No se pudo guardar el pedido";
+      if (message.startsWith("No hay suficiente stock")) {
+        setStockError(message);
+        setStep(2);
+      }
+      toast.error(message);
     },
   });
 
@@ -98,20 +104,18 @@ export default function NewOrder() {
   const removeLine = (i) => setLines(lines.filter((_, idx) => idx !== i));
   const updateLine = (i, field, val) => setLines(lines.map((l, idx) => idx === i ? { ...l, [field]: val } : l));
 
-  const selectProduct = (p) => {
-    const emptyIdx = lines.findIndex((l) => !l.desc && !l.price);
-    const newLine = { desc: p.name, qty: "1", price: String(p.price), cost: p.cost != null ? String(p.cost) : "", product_id: p.id, saveTocatalog: false };
-    if (emptyIdx >= 0) {
-      setLines(lines.map((l, i) => i === emptyIdx ? newLine : l));
-    } else {
-      setLines([...lines, newLine]);
-    }
-  };
+  const getLineProduct = (line) => products.find((p) => p.id === line.product_id);
 
-  const validateStock = (filledLines) => {
+  const getRequestedQuantity = (productId, sourceLines = lines) =>
+    sourceLines.reduce((sum, line) => {
+      if (line.product_id !== productId) return sum;
+      return sum + (parseFloat(line.qty) || 1);
+    }, 0);
+
+  const getStockIssue = (sourceLines) => {
     const requestedByProduct = new Map();
 
-    for (const line of filledLines) {
+    for (const line of sourceLines.filter((l) => l.desc.trim())) {
       if (!line.product_id) continue;
       const quantity = parseFloat(line.qty) || 1;
       const current = requestedByProduct.get(line.product_id) || { quantity: 0, name: line.desc };
@@ -125,11 +129,46 @@ export default function NewOrder() {
 
       const available = Number(product.stock);
       if (available < requested.quantity) {
-        toast.error(buildStockError(product.name || requested.name, available, requested.quantity));
-        return false;
+        return {
+          product,
+          available,
+          requested: requested.quantity,
+          message: buildStockError(product.name || requested.name, available, requested.quantity),
+        };
       }
     }
 
+    return null;
+  };
+
+  const selectProduct = (p) => {
+    const emptyIdx = lines.findIndex((l) => !l.desc && !l.price);
+    const newLine = { desc: p.name, qty: "1", price: String(p.price), cost: p.cost != null ? String(p.cost) : "", product_id: p.id, saveTocatalog: false };
+    if (emptyIdx >= 0) {
+      setLines(lines.map((l, i) => i === emptyIdx ? newLine : l));
+    } else {
+      setLines([...lines, newLine]);
+    }
+  };
+
+  useEffect(() => {
+    if (!stockError) return;
+
+    const issue = getStockIssue(lines);
+    setStockError(issue?.message || "");
+  }, [lines, products, stockError]);
+
+  const validateStock = (filledLines) => {
+    const issue = getStockIssue(filledLines);
+
+    if (issue) {
+      setStockError(issue.message);
+      toast.error(issue.message);
+      setStep(2);
+      return false;
+    }
+
+    setStockError("");
     return true;
   };
 
@@ -312,6 +351,12 @@ for (const l of linesToSave) {
             <p className="text-sm text-muted-foreground">Agrega los productos o escríbelos a mano</p>
           </div>
 
+          {stockError && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+              {stockError}
+            </div>
+          )}
+
           {/* Quick-add from catalog */}
           {products.length > 0 && (
             <div>
@@ -333,7 +378,13 @@ for (const l of linesToSave) {
 
           {/* Manual lines */}
           <div className="space-y-3">
-            {lines.map((line, i) => (
+            {lines.map((line, i) => {
+              const lineProduct = getLineProduct(line);
+              const lineStock = lineProduct?.stock;
+              const totalRequested = line.product_id ? getRequestedQuantity(line.product_id) : 0;
+              const hasStockIssue = lineStock != null && totalRequested > Number(lineStock);
+
+              return (
               <div key={i} className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <Input
@@ -348,7 +399,7 @@ for (const l of linesToSave) {
                     min="1"
                     value={line.qty}
                     onChange={(e) => updateLine(i, "qty", e.target.value)}
-                    className="flex-[1] text-center"
+                    className={`flex-[1] text-center ${hasStockIssue ? "border-rose-300 focus-visible:ring-rose-300" : ""}`}
                   />
                   <Input
                     placeholder="Precio $"
@@ -364,6 +415,13 @@ for (const l of linesToSave) {
                     </Button>
                   )}
                 </div>
+                {lineProduct && lineStock != null && (
+                  <p className={`pl-1 text-xs ${hasStockIssue ? "text-rose-600 font-medium" : "text-muted-foreground"}`}>
+                    {hasStockIssue
+                      ? `Disponible: ${lineStock}. Ajusta la cantidad para continuar.`
+                      : `Disponible: ${lineStock}`}
+                  </p>
+                )}
                 {/* Solo mostrar costo si el producto NO viene del catálogo (no tiene cost prefilled) o si está vacío */}
                 {line.desc && (
                   <div className="space-y-1.5 pl-1">
@@ -394,7 +452,8 @@ for (const l of linesToSave) {
                   </div>
                 )}
               </div>
-            ))}
+            );
+            })}
           </div>
 
           <Button type="button" variant="outline" size="sm" className="w-full" onClick={addLine}>
