@@ -9,6 +9,10 @@ import { Plus, X, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import PaymentPlanForm from "@/components/orders/PaymentPlanForm";
 
+function buildStockError(productName, available, requested) {
+  return `No hay suficiente stock de ${productName}. Disponible: ${available}. Solicitado: ${requested}.`;
+}
+
 // Step indicator
 function Step({ number, label, active, done }) {
   return (
@@ -71,8 +75,12 @@ export default function NewOrder() {
     mutationFn: (data) => createOrder(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["orders"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
       toast.success("¡Pedido guardado! 🎉");
       navigate("/pedidos");
+    },
+    onError: (error) => {
+      toast.error(error.message || "No se pudo guardar el pedido");
     },
   });
 
@@ -99,23 +107,38 @@ export default function NewOrder() {
       setLines([...lines, newLine]);
     }
   };
+
+  const validateStock = (filledLines) => {
+    const requestedByProduct = new Map();
+
+    for (const line of filledLines) {
+      if (!line.product_id) continue;
+      const quantity = parseFloat(line.qty) || 1;
+      const current = requestedByProduct.get(line.product_id) || { quantity: 0, name: line.desc };
+      current.quantity += quantity;
+      requestedByProduct.set(line.product_id, current);
+    }
+
+    for (const [productId, requested] of requestedByProduct) {
+      const product = products.find((p) => p.id === productId);
+      if (product?.stock == null) continue;
+
+      const available = Number(product.stock);
+      if (available < requested.quantity) {
+        toast.error(buildStockError(product.name || requested.name, available, requested.quantity));
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSave = async () => {
 
     const filledLines = lines.filter((l) => l.desc.trim());
     if (!clientName) { toast.error("Elige o escribe el nombre del cliente"); return; }
     if (filledLines.length === 0) { toast.error("Agrega al menos un producto"); return; }
-    toast.info("lines: " + JSON.stringify(filledLines.map(l => ({desc: l.desc, pid: l.product_id}))));
-    for (const l of filledLines) {
-      toast.info("revisando: " + l.desc + " id: " + l.product_id);
-      if (l.product_id) {
-        const product = products.find((p) => p.id === l.product_id);
-        toast.info("stock: " + product?.stock + " qty: " + l.qty);
-        if (product && product.stock != null && product.stock < (parseFloat(l.qty) || 1)) {
-          toast.error("Sin stock suficiente de " + l.desc + ". Disponible: " + product.stock);
-          return;
-        }
-      }
-    }
+    if (!validateStock(filledLines)) return;
 
     const items = filledLines.map((l) => ({
       product_name: l.desc,
@@ -136,8 +159,8 @@ export default function NewOrder() {
       id: p.id || Math.random().toString(36).slice(2, 9),
     }));
 // Guardar líneas nuevas en catálogo si se marcó el checkbox
-const linesToSave = filledLines.filter((l) => l.saveToProduct);
-for (const l of filledLines.filter((l) => l.saveToProduct)) {
+const linesToSave = filledLines.filter((l) => l.saveTocatalog);
+for (const l of linesToSave) {
   await createProduct({
     name: l.desc,
     price: parseFloat(l.price) || 0,

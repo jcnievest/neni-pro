@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOrders, updateOrder, updateProduct, getProducts } from "@/api/entities";
+import { getOrders, updateOrder } from "@/api/entities";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,29 +18,12 @@ export default function Deliveries() {
     queryFn: () => getOrders("-created_date", 200),
   });
 
-  const { data: products = [] } = useQuery({
-    queryKey: ["products"],
-    queryFn: () => getProducts("name", 500),
-  });
-
   const markDelivered = useMutation({
     mutationFn: async (order) => {
       await updateOrder(order.id, { delivered: true, status: "entregado" });
-      if (order.items && order.items.length > 0) {
-        for (const item of order.items) {
-          if (item.product_id) {
-            const product = products?.find((p) => p.id === item.product_id);
-            if (product && product.stock != null) {
-              const newStock = Math.max(0, product.stock - (item.quantity || 1));
-              await updateProduct(item.product_id, { stock: newStock });
-            }
-          }
-        }
-      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["orders"] });
-      qc.invalidateQueries({ queryKey: ["products"] });
       toast.success("¡Entrega marcada como realizada!");
     },
   });

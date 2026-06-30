@@ -72,6 +72,35 @@ function toOrderItem(row) {
   };
 }
 
+function isStockControlled(stock) {
+  return stock !== null && stock !== undefined && Number.isFinite(Number(stock));
+}
+
+function getRequestedStockByProduct(items) {
+  const requestedByProduct = new Map();
+
+  for (const item of items) {
+    if (!item.product_id) continue;
+    const quantity = Number(item.quantity) || 1;
+    if (quantity <= 0) continue;
+
+    const current = requestedByProduct.get(item.product_id) || {
+      product_id: item.product_id,
+      product_name: item.product_name,
+      quantity: 0,
+    };
+
+    current.quantity += quantity;
+    requestedByProduct.set(item.product_id, current);
+  }
+
+  return [...requestedByProduct.values()];
+}
+
+function buildStockError(productName, available, requested) {
+  return `No hay suficiente stock de ${productName}. Disponible: ${available}. Solicitado: ${requested}.`;
+}
+
 function toPayment(row) {
   return {
     id: row.id,
@@ -323,6 +352,82 @@ export async function deleteProduct(id) {
   if (error) throw error;
 }
 
+async function getStockPlanForItems(userId, items) {
+  const requestedItems = getRequestedStockByProduct(items);
+  if (requestedItems.length === 0) return [];
+
+  const productIds = requestedItems.map((item) => item.product_id);
+  const { data, error } = await supabase
+    .from('products')
+    .select(PRODUCT_SELECT)
+    .eq('user_id', userId)
+    .in('id', productIds);
+  if (error) throw error;
+
+  const productsById = new Map(data.map((row) => [row.id, row]));
+  const stockPlan = [];
+
+  for (const item of requestedItems) {
+    const product = productsById.get(item.product_id);
+    if (!product || !isStockControlled(product.stock)) continue;
+
+    const available = Number(product.stock);
+    if (available < item.quantity) {
+      throw new Error(buildStockError(product.name || item.product_name, available, item.quantity));
+    }
+
+    stockPlan.push({
+      id: product.id,
+      name: product.name || item.product_name,
+      previousStock: available,
+      nextStock: available - item.quantity,
+      requested: item.quantity,
+    });
+  }
+
+  return stockPlan;
+}
+
+async function rollbackStockUpdates(userId, updatedProducts) {
+  await Promise.all(
+    updatedProducts.map((product) =>
+      supabase
+        .from('products')
+        .update({ stock: product.previousStock })
+        .eq('id', product.id)
+        .eq('user_id', userId)
+    )
+  );
+}
+
+async function decrementStockForOrder(userId, stockPlan) {
+  const updatedProducts = [];
+
+  try {
+    for (const product of stockPlan) {
+      const { data, error } = await supabase
+        .from('products')
+        .update({ stock: product.nextStock })
+        .eq('id', product.id)
+        .eq('user_id', userId)
+        .eq('stock', product.previousStock)
+        .select('id, stock');
+
+      if (error) throw error;
+      if (!data?.length) {
+        throw new Error(buildStockError(product.name, product.previousStock, product.requested));
+      }
+
+      updatedProducts.push(product);
+    }
+  } catch (error) {
+    await rollbackStockUpdates(userId, updatedProducts);
+    throw error;
+  }
+
+  return updatedProducts;
+}
+
 export async function uploadProductPhoto(file) {
   const userId = await requireUserId();
   const ext = file.name.split('.').pop() || 'jpg';
@@ -375,70 +480,77 @@ export async function getOrder(id) {
 export async function createOrder(payload) {
   const userId = await requireUserId();
   const { items = [], payment_plan = [], delivery_date, delivered = false, ...orderFields } = payload;
+  const stockPlan = await getStockPlanForItems(userId, items);
+  const updatedStockProducts = await decrementStockForOrder(userId, stockPlan);
 
-  const { data: order, error } = await supabase
-    .from('orders')
-    .insert({
+  try {
+    const { data: order, error } = await supabase
+      .from('orders')
+      .insert({
+        user_id: userId,
+        client_id: orderFields.client_id || null,
+        client_name: orderFields.client_name,
+        client_phone: orderFields.client_phone,
+        total: orderFields.total,
+        advance: orderFields.advance ?? 0,
+        balance: orderFields.balance ?? 0,
+        total_cost: orderFields.total_cost ?? 0,
+        delivery_date: delivery_date || null,
+        status: orderFields.status ?? 'apartado',
+        notes: orderFields.notes,
+        delivered,
+      })
+      .select()
+      .single();
+    if (error) throw error;
+
+    if (items.length > 0) {
+      const { error: itemsError } = await supabase.from('order_items').insert(
+        items.map((item) => ({
+          order_id: order.id,
+          user_id: userId,
+          product_id: item.product_id || null,
+          product_name: item.product_name,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          unit_cost: item.unit_cost ?? 0,
+          subtotal: item.subtotal,
+        }))
+      );
+      if (itemsError) throw itemsError;
+    }
+
+    if (payment_plan.length > 0) {
+      const { error: paymentsError } = await supabase.from('payments').insert(
+        payment_plan.map((p, i) => ({
+          id: p.id || crypto.randomUUID(),
+          order_id: order.id,
+          user_id: userId,
+          amount: p.amount,
+          due_date: p.due_date || null,
+          status: p.status ?? 'pendiente',
+          paid_date: p.paid_date || null,
+          sort_order: i,
+        }))
+      );
+      if (paymentsError) throw paymentsError;
+    }
+
+    const { error: deliveryError } = await supabase.from('deliveries').insert({
+      order_id: order.id,
       user_id: userId,
-      client_id: orderFields.client_id || null,
-      client_name: orderFields.client_name,
-      client_phone: orderFields.client_phone,
-      total: orderFields.total,
-      advance: orderFields.advance ?? 0,
-      balance: orderFields.balance ?? 0,
-      total_cost: orderFields.total_cost ?? 0,
       delivery_date: delivery_date || null,
-      status: orderFields.status ?? 'apartado',
-      notes: orderFields.notes,
       delivered,
-    })
-    .select()
-    .single();
-  if (error) throw error;
+      status: orderFields.status,
+      notes: null,
+    });
+    if (deliveryError) throw deliveryError;
 
-  if (items.length > 0) {
-    const { error: itemsError } = await supabase.from('order_items').insert(
-      items.map((item) => ({
-        order_id: order.id,
-        user_id: userId,
-        product_id: item.product_id || null,
-        product_name: item.product_name,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        unit_cost: item.unit_cost ?? 0,
-        subtotal: item.subtotal,
-      }))
-    );
-    if (itemsError) throw itemsError;
+    return getOrder(order.id);
+  } catch (error) {
+    await rollbackStockUpdates(userId, updatedStockProducts);
+    throw error;
   }
-
-  if (payment_plan.length > 0) {
-    const { error: paymentsError } = await supabase.from('payments').insert(
-      payment_plan.map((p, i) => ({
-        id: p.id || crypto.randomUUID(),
-        order_id: order.id,
-        user_id: userId,
-        amount: p.amount,
-        due_date: p.due_date || null,
-        status: p.status ?? 'pendiente',
-        paid_date: p.paid_date || null,
-        sort_order: i,
-      }))
-    );
-    if (paymentsError) throw paymentsError;
-  }
-
-  const { error: deliveryError } = await supabase.from('deliveries').insert({
-    order_id: order.id,
-    user_id: userId,
-    delivery_date: delivery_date || null,
-    delivered,
-    status: orderFields.status,
-    notes: null,
-  });
-  if (deliveryError) throw deliveryError;
-
-  return getOrder(order.id);
 }
 
 export async function updateOrder(id, payload) {
