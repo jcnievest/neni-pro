@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import TopBar from "./TopBar";
 import MobileNav from "./MobileNav";
 import TrialBanner from "@/components/TrialBanner";
+import AccessGate from "@/components/AccessGate";
 
 export default function AppLayout() {
   return (
@@ -9,7 +10,9 @@ export default function AppLayout() {
       <TopBar />
       <TrialBanner />
       <main className="px-4 pt-4 pb-24" style={{ WebkitOverflowScrolling: "touch" }}>
-        <Outlet />
+        <AccessGate>
+          <Outlet />
+        </AccessGate>
       </main>
       <MobileNav />
     </div>

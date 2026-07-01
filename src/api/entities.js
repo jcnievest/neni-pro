@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { requireActiveAccess } from '@/lib/access';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -223,6 +224,7 @@ export async function getClients(sort = '-created_date', limit = 500) {
 
 export async function createClient(payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { data, error } = await supabase
     .from('clients')
     .insert({ ...payload, user_id: userId })
@@ -234,6 +236,7 @@ export async function createClient(payload) {
 
 export async function updateClient(id, payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { data, error } = await supabase
     .from('clients')
     .update(payload)
@@ -247,6 +250,7 @@ export async function updateClient(id, payload) {
 
 export async function deleteClient(id) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { error } = await supabase.from('clients').delete().eq('id', id).eq('user_id', userId);
   if (error) throw error;
 }
@@ -324,6 +328,7 @@ export async function getProducts(sort = '-created_date', limit = 500) {
 
 export async function createProduct(payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { data, error } = await supabase
     .from('products')
     .insert({ ...pickProductPayload(payload), user_id: userId })
@@ -335,6 +340,7 @@ export async function createProduct(payload) {
 
 export async function updateProduct(id, payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { data, error } = await supabase
     .from('products')
     .update(pickProductPayload(payload))
@@ -348,6 +354,7 @@ export async function updateProduct(id, payload) {
 
 export async function deleteProduct(id) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { error } = await supabase.from('products').delete().eq('id', id).eq('user_id', userId);
   if (error) throw error;
 }
@@ -430,6 +437,7 @@ async function decrementStockForOrder(userId, stockPlan) {
 
 export async function uploadProductPhoto(file) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const ext = file.name.split('.').pop() || 'jpg';
   const path = `${userId}/${Date.now()}.${ext}`;
 
@@ -479,6 +487,7 @@ export async function getOrder(id) {
 
 export async function createOrder(payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { items = [], payment_plan = [], delivery_date, delivered = false, ...orderFields } = payload;
   const stockPlan = await getStockPlanForItems(userId, items);
   const updatedStockProducts = await decrementStockForOrder(userId, stockPlan);
@@ -555,6 +564,7 @@ export async function createOrder(payload) {
 
 export async function updateOrder(id, payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { items, payment_plan, delivered, delivery_date, ...orderFields } = payload;
 
   const orderUpdate = { ...orderFields };
@@ -625,6 +635,7 @@ export async function getPayments(orderId) {
 
 export async function createPayment(orderId, payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { data, error } = await supabase
     .from('payments')
     .insert({
@@ -645,6 +656,7 @@ export async function createPayment(orderId, payload) {
 
 export async function updatePayment(id, payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { data, error } = await supabase
     .from('payments')
     .update(payload)
@@ -658,6 +670,7 @@ export async function updatePayment(id, payload) {
 
 export async function deletePayment(id) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { error } = await supabase.from('payments').delete().eq('id', id).eq('user_id', userId);
   if (error) throw error;
 }
@@ -681,6 +694,7 @@ export async function getDeliveries(limit = 500) {
 
 export async function createDelivery(payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { data, error } = await supabase
     .from('deliveries')
     .insert({ ...payload, user_id: userId })
@@ -696,6 +710,7 @@ export async function updateDelivery(orderId, payload) {
 
 export async function deleteDelivery(id) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { error } = await supabase.from('deliveries').delete().eq('id', id).eq('user_id', userId);
   if (error) throw error;
 }
@@ -717,6 +732,7 @@ export async function getSettings() {
 
 export async function upsertSettings(payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { data: existing } = await supabase
     .from('settings')
     .select('id, catalog_slug')
@@ -770,6 +786,7 @@ export async function getPaymentCard() {
 
 export async function upsertPaymentCard(payload) {
   const userId = await requireUserId();
+  await requireActiveAccess(userId);
   const { data: existing } = await supabase
     .from('payment_cards')
     .select('id')
