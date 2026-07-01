@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import ProductForm from "@/components/products/ProductForm";
 import EmptyState from "@/components/shared/EmptyState";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Products() {
   const [showForm, setShowForm] = useState(false);
@@ -19,6 +20,8 @@ export default function Products() {
   const [search, setSearch] = useState("");
   const qc = useQueryClient();
   const navigate = useNavigate();
+  const { accessState } = useAuth();
+  const canEdit = accessState.hasAccess;
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
@@ -70,17 +73,19 @@ export default function Products() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Buscar producto..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <Button onClick={() => setShowForm(true)} size="icon" className="rounded-xl shrink-0">
-          <Plus className="w-5 h-5" />
-        </Button>
+        {canEdit && (
+          <Button onClick={() => setShowForm(true)} size="icon" className="rounded-xl shrink-0">
+            <Plus className="w-5 h-5" />
+          </Button>
+        )}
       </div>
 
       {filtered.length === 0 && !isLoading ? (
         <EmptyState
           icon={Package}
           title="Sin productos aún"
-          description="Agrega tu primer producto"
-          action={<Button onClick={() => setShowForm(true)}>Agregar producto</Button>}
+          description={canEdit ? "Agrega tu primer producto" : "Tus productos aparecerán aquí al activar tu suscripción"}
+          action={canEdit ? <Button onClick={() => setShowForm(true)}>Agregar producto</Button> : null}
         />
       ) : (
         <div className="space-y-2">
@@ -112,17 +117,19 @@ export default function Products() {
                     {p.stock != null && <span>· Stock: {p.stock}</span>}
                   </div>
                 </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" title="Promocionar producto" onClick={() => promoteProduct(p)}>
-                    <Share2 className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditing(p)}>
-                    <Pencil className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleting(p)}>
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+                {canEdit && (
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" title="Promocionar producto" onClick={() => promoteProduct(p)}>
+                      <Share2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditing(p)}>
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleting(p)}>
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
           ))}

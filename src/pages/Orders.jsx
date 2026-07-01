@@ -7,8 +7,12 @@ import { Plus, ShoppingBag, ChevronLeft } from "lucide-react";
 import { StatusBadge } from "@/components/shared/TagBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import { format } from "date-fns";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Orders() {
+  const { accessState } = useAuth();
+  const canCreate = accessState.hasAccess;
+
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["orders"],
     queryFn: () => getOrders("-created_date", 200),
@@ -19,17 +23,19 @@ export default function Orders() {
       <Link to="/" className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors">
         <ChevronLeft className="w-3.5 h-3.5 mr-0.5" /> Inicio
       </Link>
-      <Link to="/pedidos/nuevo">
-        <Button className="w-full">
-          <Plus className="w-5 h-5 mr-2" /> Nuevo pedido
-        </Button>
-      </Link>
+      {canCreate && (
+        <Link to="/pedidos/nuevo">
+          <Button className="w-full">
+            <Plus className="w-5 h-5 mr-2" /> Nuevo pedido
+          </Button>
+        </Link>
+      )}
 
       {orders.length === 0 && !isLoading ? (
         <EmptyState
           icon={ShoppingBag}
           title="Sin pedidos aún"
-          description="Crea tu primer pedido"
+          description={canCreate ? "Crea tu primer pedido" : "Tus pedidos aparecerán aquí al activar tu suscripción"}
         />
       ) : (
         <div className="space-y-2">

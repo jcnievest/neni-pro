@@ -10,6 +10,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import ClientForm from "@/components/clients/ClientForm";
 import { ClientTag } from "@/components/shared/TagBadge";
 import EmptyState from "@/components/shared/EmptyState";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Clients() {
   const [showForm, setShowForm] = useState(false);
@@ -17,6 +18,8 @@ export default function Clients() {
   const [deleting, setDeleting] = useState(null);
   const [search, setSearch] = useState("");
   const qc = useQueryClient();
+  const { accessState } = useAuth();
+  const canEdit = accessState.hasAccess;
 
   const { data: clients = [], isLoading } = useQuery({
     queryKey: ["clients"],
@@ -54,17 +57,19 @@ export default function Clients() {
             className="pl-9"
           />
         </div>
-        <Button onClick={() => setShowForm(true)} size="icon" className="rounded-xl shrink-0">
-          <Plus className="w-5 h-5" />
-        </Button>
+        {canEdit && (
+          <Button onClick={() => setShowForm(true)} size="icon" className="rounded-xl shrink-0">
+            <Plus className="w-5 h-5" />
+          </Button>
+        )}
       </div>
 
       {filtered.length === 0 && !isLoading ? (
         <EmptyState
           icon={Users}
           title="Sin clientes aún"
-          description="Agrega tu primer cliente para empezar"
-          action={<Button onClick={() => setShowForm(true)}>Agregar cliente</Button>}
+          description={canEdit ? "Agrega tu primer cliente para empezar" : "Tus clientes aparecerán aquí al activar tu suscripción"}
+          action={canEdit ? <Button onClick={() => setShowForm(true)}>Agregar cliente</Button> : null}
         />
       ) : (
         <div className="space-y-2">
@@ -83,14 +88,16 @@ export default function Clients() {
                   )}
                   {c.notes && <p className="text-xs text-muted-foreground">{c.notes}</p>}
                 </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditing(c)}>
-                    <Pencil className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleting(c)}>
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+                {canEdit && (
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditing(c)}>
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleting(c)}>
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </Card>
           ))}

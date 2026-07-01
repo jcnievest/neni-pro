@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import PaymentCardModal from "@/components/payment-card/PaymentCardModal";
+import { useAuth } from "@/lib/AuthContext";
 
 const WAIcon = () => (
   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
@@ -28,6 +29,8 @@ function getEffectiveStatus(payment) {
 
 export default function PaymentPlanDetail({ order }) {
   const qc = useQueryClient();
+  const { accessState } = useAuth();
+  const canUseActions = accessState.hasAccess;
   const plan = order.payment_plan || [];
   const today = new Date().toISOString().slice(0, 10);
   const [cardModal, setCardModal] = useState(null);
@@ -147,7 +150,7 @@ export default function PaymentPlanDetail({ order }) {
                   {cfg.label}
                 </span>
               </div>
-              {effective !== "pagado" && (
+              {canUseActions && effective !== "pagado" && (
                 <div className="space-y-1.5">
                   <div className="flex gap-2">
                     <Button

@@ -1,4 +1,5 @@
 import { LockKeyhole } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { SUBSCRIPTION_URL } from "@/lib/access";
 import { useAuth } from "@/lib/AuthContext";
@@ -9,8 +10,36 @@ const AccessLoader = () => (
   </div>
 );
 
+function isReadOnlyRoute(pathname) {
+  return (
+    pathname === "/clientes" ||
+    pathname === "/productos" ||
+    pathname === "/pedidos" ||
+    /^\/pedido\/[^/]+$/.test(pathname)
+  );
+}
+
+const ReadOnlyNotice = () => (
+  <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+    <p className="text-sm font-semibold text-amber-800">Modo solo lectura</p>
+    <p className="mt-0.5 text-xs leading-5 text-amber-700">
+      Tu prueba terminó. Puedes consultar tus datos, pero para crear, editar,
+      cobrar, entregar o promocionar necesitas activar tu suscripción.
+    </p>
+    <a
+      href={SUBSCRIPTION_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-2 inline-block rounded-full bg-amber-500 px-4 py-1.5 text-xs font-bold text-white"
+    >
+      Suscribirme ahora
+    </a>
+  </div>
+);
+
 export default function AccessGate({ children }) {
   const { accessState, isLoadingAccess, logout } = useAuth();
+  const location = useLocation();
 
   if (isLoadingAccess) {
     return <AccessLoader />;
@@ -18,6 +47,15 @@ export default function AccessGate({ children }) {
 
   if (accessState.hasAccess) {
     return children;
+  }
+
+  if (isReadOnlyRoute(location.pathname)) {
+    return (
+      <>
+        <ReadOnlyNotice />
+        {children}
+      </>
+    );
   }
 
   return (
