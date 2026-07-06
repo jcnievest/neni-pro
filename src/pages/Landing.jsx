@@ -122,7 +122,7 @@ export default function Landing() {
               Iniciar sesión
             </Link>
           </div>
-          <p className="text-xs text-gray-400 mt-4">Gratis para probar. Después solo $30 al mes.</p>
+          <p className="text-xs text-gray-400 mt-4">7 días gratis. Después solo $30 al mes.</p>
         </div>
         <div className="md:flex-1 flex justify-center mb-6 md:mb-0 md:order-2 order-1">
           <img src="/imagecover.png" alt="Nenis Pro App" className="w-full max-w-sm md:max-w-xl rounded-3xl shadow-xl object-cover" />
