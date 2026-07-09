@@ -74,6 +74,9 @@ export default function NewOrder() {
       setCreatingClient(false);
       setStep(2);
     },
+    onError: (error) => {
+      toast.error(error.message || "No se pudo crear el cliente");
+    },
   });
 
   const createOrderMut = useMutation({

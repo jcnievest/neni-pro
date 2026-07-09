@@ -32,11 +32,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const userSubscription = await getUserSubscription(currentUser.id);
       setSubscription(userSubscription);
-      setAccessState(getAccessState(userSubscription));
+      setAccessState(getAccessState(userSubscription, new Date(), currentUser));
     } catch (error) {
       console.error("No se pudo consultar la suscripción", error);
       setSubscription(null);
-      setAccessState(getAccessState(null));
+      setAccessState(getAccessState(null, new Date(), currentUser));
     } finally {
       setIsLoadingAccess(false);
     }

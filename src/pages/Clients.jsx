@@ -11,6 +11,7 @@ import ClientForm from "@/components/clients/ClientForm";
 import { ClientTag } from "@/components/shared/TagBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import { useAuth } from "@/lib/AuthContext";
+import { toast } from "sonner";
 
 export default function Clients() {
   const [showForm, setShowForm] = useState(false);
@@ -29,16 +30,19 @@ export default function Clients() {
   const createMut = useMutation({
     mutationFn: (data) => createClient(data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["clients"] }); setShowForm(false); },
+    onError: (error) => toast.error(error.message || "No se pudo crear el cliente"),
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }) => updateClient(id, data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["clients"] }); setEditing(null); },
+    onError: (error) => toast.error(error.message || "No se pudo guardar el cliente"),
   });
 
   const deleteMut = useMutation({
     mutationFn: (id) => deleteClient(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["clients"] }); setDeleting(null); },
+    onError: (error) => toast.error(error.message || "No se pudo eliminar el cliente"),
   });
 
   const filtered = clients.filter(
