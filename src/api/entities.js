@@ -43,6 +43,25 @@ function toClient(row) {
   };
 }
 
+const CLIENT_WRITABLE_KEYS = [
+  'name',
+  'phone',
+  'instagram',
+  'facebook',
+  'notes',
+  'tag',
+];
+
+function pickClientPayload(payload) {
+  const row = {};
+  for (const key of CLIENT_WRITABLE_KEYS) {
+    if (payload[key] === undefined) continue;
+    const value = typeof payload[key] === 'string' ? payload[key].trim() : payload[key];
+    row[key] = value === '' ? null : value;
+  }
+  return row;
+}
+
 function toProduct(row) {
   if (!row) return null;
   return {
@@ -227,7 +246,7 @@ export async function createClient(payload) {
   await requireActiveAccess(userId);
   const { data, error } = await supabase
     .from('clients')
-    .insert({ ...payload, user_id: userId })
+    .insert({ ...pickClientPayload(payload), user_id: userId })
     .select()
     .single();
   if (error) throw error;
@@ -239,7 +258,7 @@ export async function updateClient(id, payload) {
   await requireActiveAccess(userId);
   const { data, error } = await supabase
     .from('clients')
-    .update(payload)
+    .update(pickClientPayload(payload))
     .eq('id', id)
     .eq('user_id', userId)
     .select()
