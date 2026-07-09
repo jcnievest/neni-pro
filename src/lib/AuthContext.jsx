@@ -4,6 +4,21 @@ import { getAccessState, getUserSubscription } from '@/lib/access';
 
 const AuthContext = createContext();
 
+function isPasswordRecoveryUrl() {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.location.hash.includes('type=recovery') ||
+    window.location.search.includes('type=recovery')
+  );
+}
+
+function redirectToResetPassword() {
+  if (typeof window === 'undefined') return;
+  if (window.location.pathname !== '/reset-password') {
+    window.location.replace('/reset-password');
+  }
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -13,8 +28,9 @@ export const AuthProvider = ({ children }) => {
   const [subscription, setSubscription] = useState(null);
   const [accessState, setAccessState] = useState(getAccessState(null));
 
-  const applySession = useCallback(async (session) => {
+  const applySession = useCallback(async (session, event = null) => {
     const currentUser = session?.user ?? null;
+    const isRecovery = event === 'PASSWORD_RECOVERY' || isPasswordRecoveryUrl();
 
     setUser(currentUser);
     setIsAuthenticated(Boolean(session));
@@ -26,6 +42,10 @@ export const AuthProvider = ({ children }) => {
       setAccessState(getAccessState(null));
       setIsLoadingAccess(false);
       return;
+    }
+
+    if (isRecovery) {
+      redirectToResetPassword();
     }
 
     setIsLoadingAccess(true);
@@ -47,8 +67,8 @@ export const AuthProvider = ({ children }) => {
       applySession(session);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      applySession(session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      applySession(session, event);
     });
 
     return () => subscription.unsubscribe();

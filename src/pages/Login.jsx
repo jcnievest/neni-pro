@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { getFriendlyAuthError } from "@/lib/auth-errors";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -24,7 +25,7 @@ export default function Login() {
       if (error) throw error;
       navigate("/inicio");
     } catch (err) {
-      setError(err.message || "Correo o contraseña incorrectos");
+      setError(getFriendlyAuthError(err, "Correo o contraseña incorrectos."));
     } finally {
       setLoading(false);
     }
