@@ -8,6 +8,12 @@ import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 
+function trackCompleteRegistration() {
+  if (typeof window !== "undefined" && typeof window.fbq === "function") {
+    window.fbq("track", "CompleteRegistration");
+  }
+}
+
 export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,6 +36,7 @@ export default function Register() {
     try {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
+      trackCompleteRegistration();
       setSuccess(true);
     } catch (err) {
       setError(err.message || "No se pudo crear la cuenta");
