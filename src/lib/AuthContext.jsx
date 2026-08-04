@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { getAccessState, getUserSubscription } from '@/lib/access';
+import { syncMailerLiteSubscriber } from '@/lib/mailerlite';
 
 const AuthContext = createContext();
 
@@ -46,6 +47,8 @@ export const AuthProvider = ({ children }) => {
 
     if (isRecovery) {
       redirectToResetPassword();
+    } else {
+      syncMailerLiteSubscriber(currentUser);
     }
 
     setIsLoadingAccess(true);
