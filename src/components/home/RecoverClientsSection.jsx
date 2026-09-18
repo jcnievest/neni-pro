@@ -53,8 +53,11 @@ export default function RecoverClientsSection({ orders }) {
       <h3 className="font-display font-semibold text-sm">Clientes por recuperar</h3>
       <div className="space-y-2">
         {inactive.map((c) => {
-          const lastDateFormatted = c.lastDate
-            ? format(new Date(c.lastDate + "T12:00:00"), "d MMM yyyy", { locale: es })
+          const lastDate = c.lastDate
+            ? new Date(c.lastDate.length === 10 ? `${c.lastDate}T12:00:00` : c.lastDate)
+            : null;
+          const lastDateFormatted = lastDate && !Number.isNaN(lastDate.getTime())
+            ? format(lastDate, "d MMM yyyy", { locale: es })
             : "—";
           return (
             <Card key={c.id} className="p-3 border-0 shadow-sm bg-violet-50/40">
