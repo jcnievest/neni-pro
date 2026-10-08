@@ -1,49 +1,42 @@
 import { Toaster } from "@/components/ui/toaster"
+import { lazy, Suspense } from 'react';
 import { Toaster as SonnerToaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
-import { AuthProvider, useAuth } from '@/lib/AuthContext';
+import { AuthProvider } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Landing from "@/pages/Landing";
 import Privacidad from "@/pages/Privacidad";
 import Terminos from "@/pages/Terminos";
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
+import ConfirmRegistration from '@/pages/ConfirmRegistration';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
-import AppLayout from '@/components/layout/AppLayout';
-import Home from '@/pages/Home';
-import Clients from '@/pages/Clients';
-import Products from '@/pages/Products';
-import Orders from '@/pages/Orders';
-import NewOrder from '@/pages/NewOrder';
-import Payments from '@/pages/Payments';
-import Deliveries from '@/pages/Deliveries';
-import QuickMessages from '@/pages/QuickMessages';
-import Report from '@/pages/Report';
-import Catalog from '@/pages/Catalog';
-import ProductPublic from '@/pages/ProductPublic';
-import Promote from '@/pages/Promote';
-import OrderDetail from '@/pages/OrderDetail';
+const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
+const Home = lazy(() => import('@/pages/Home'));
+const Clients = lazy(() => import('@/pages/Clients'));
+const Products = lazy(() => import('@/pages/Products'));
+const Orders = lazy(() => import('@/pages/Orders'));
+const NewOrder = lazy(() => import('@/pages/NewOrder'));
+const Payments = lazy(() => import('@/pages/Payments'));
+const Deliveries = lazy(() => import('@/pages/Deliveries'));
+const QuickMessages = lazy(() => import('@/pages/QuickMessages'));
+const Report = lazy(() => import('@/pages/Report'));
+const Catalog = lazy(() => import('@/pages/Catalog'));
+const ProductPublic = lazy(() => import('@/pages/ProductPublic'));
+const Promote = lazy(() => import('@/pages/Promote'));
+const OrderDetail = lazy(() => import('@/pages/OrderDetail'));
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth } = useAuth();
-
-  if (isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/auth/confirm" element={<ConfirmRegistration />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
@@ -75,7 +68,9 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <AuthenticatedApp />
+          <Suspense fallback={<p role="status" className="p-8 text-center text-muted-foreground">Cargando Nenis Pro…</p>}>
+            <AuthenticatedApp />
+          </Suspense>
         </Router>
         <Toaster />
         <SonnerToaster richColors position="top-center" />

@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Plus, X, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import PaymentPlanForm from "@/components/orders/PaymentPlanForm";
+import { useAuth } from "@/lib/AuthContext";
+import { campaignAnalytics } from "@/lib/analytics";
 
 function buildStockError(productName, available, requested) {
   return `No hay suficiente stock de ${productName}. Disponible: ${available}. Solicitado: ${requested}.`;
@@ -31,6 +33,7 @@ function Step({ number, label, active, done }) {
 }
 
 export default function NewOrder() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [step, setStep] = useState(1);
@@ -81,7 +84,8 @@ export default function NewOrder() {
 
   const createOrderMut = useMutation({
     mutationFn: (data) => createOrder(data),
-    onSuccess: () => {
+    onSuccess: (order) => {
+      void campaignAnalytics.milestone('FirstOrderSaved', user, order.id);
       qc.invalidateQueries({ queryKey: ["orders"] });
       qc.invalidateQueries({ queryKey: ["products"] });
       toast.success("¡Pedido guardado! 🎉");

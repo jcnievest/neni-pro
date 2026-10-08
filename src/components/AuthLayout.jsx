@@ -2,11 +2,11 @@ import React from "react";
 
 export default function AuthLayout({ icon: Icon, iconSrc, iconAlt = "", title, subtitle, footer, children }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
       <div className="w-full max-w-md">
-        <h1 className="text-center text-4xl font-display font-bold text-primary tracking-tight mb-8">
+        <p className="text-center text-4xl font-display font-bold text-primary mb-8">
           Nenis Pro
-        </h1>
+        </p>
         <div className="text-center mb-10">
           {iconSrc ? (
             <img
@@ -19,10 +19,10 @@ export default function AuthLayout({ icon: Icon, iconSrc, iconAlt = "", title, s
               <Icon className="w-7 h-7 text-primary-foreground" aria-hidden="true" />
             </div>
           )}
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
-          {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
+          <h1 className="text-3xl font-bold text-foreground">{title}</h1>
+          {subtitle && <p className="text-muted-foreground mt-2 break-words">{subtitle}</p>}
         </div>
-        <div className="bg-card rounded-2xl shadow-sm border border-border p-8">
+        <div className="bg-card rounded-2xl shadow-sm border border-border p-5 sm:p-8">
           {children}
         </div>
         {footer && (
