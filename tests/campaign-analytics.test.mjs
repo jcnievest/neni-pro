@@ -76,3 +76,29 @@ test('attribution survives navigation and redirects, ignores arbitrary/PII param
   assert.doesNotThrow(() => createCampaignAnalytics(browser, async () => ({})).captureAttribution());
   assert.deepEqual(cleanAttribution({ name: 'Private', phone: '555', utm_source: 'person@example.test', utm_campaign: 'negocio-con-orden' }), { utm_campaign: 'negocio-con-orden' });
 });
+
+test('visits without a new campaign do not extend attribution expiry', () => {
+  const { browser } = setup();
+  const key = 'nenis:campaign:v1';
+  const expires = Date.now() + 86400000;
+  browser.localStorage.setItem(key, JSON.stringify({ values: { utm_source: 'facebook' }, expires }));
+  const analytics = createCampaignAnalytics(browser, async () => ({}));
+  assert.deepEqual(analytics.captureAttribution(), { utm_source: 'facebook' });
+  assert.equal(JSON.parse(browser.localStorage.getItem(key)).expires, expires);
+  browser.localStorage.setItem(key, JSON.stringify({ values: { utm_source: 'facebook' }, expires: Date.now() - 1 }));
+  assert.deepEqual(createCampaignAnalytics(browser, async () => ({})).captureAttribution(), {});
+  browser.location.search = '?utm_source=instagram&utm_campaign=negocio-con-orden';
+  assert.deepEqual(createCampaignAnalytics(browser, async () => ({})).captureAttribution(), {
+    utm_source: 'instagram', utm_campaign: 'negocio-con-orden',
+  });
+  assert.ok(JSON.parse(browser.localStorage.getItem(key)).expires > expires);
+});
+
+test('invalid stored attribution is ignored without interrupting registration', () => {
+  for (const saved of ['not json', 'null', '{"values":null,"expires":"never"}', '{"expires":9999999999999,"values":{"email":"private@example.test"}}']) {
+    const { browser } = setup();
+    browser.localStorage.setItem('nenis:campaign:v1', saved);
+    const analytics = createCampaignAnalytics(browser, async () => ({}));
+    assert.equal(analytics.registrationUrl(), '/register');
+  }
+});

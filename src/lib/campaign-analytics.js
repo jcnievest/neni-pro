@@ -23,14 +23,21 @@ export function createCampaignAnalytics(browser, claimMilestone) {
     if (!browser) return {};
     if (captured) return { ...attribution };
     captured = true;
+    let expires = 0;
     try {
       const saved = JSON.parse(browser.localStorage.getItem(storageKey) || 'null');
-      if (saved?.expires > Date.now()) attribution = cleanAttribution(saved.values);
+      if (Number.isFinite(saved?.expires) && saved.expires > Date.now()) {
+        attribution = cleanAttribution(saved.values);
+        expires = saved.expires;
+      }
     } catch { /* Storage may be unavailable in private browsing. */ }
     const incoming = cleanAttribution(Object.fromEntries(new URLSearchParams(browser.location.search)));
-    if (Object.keys(incoming).length) attribution = incoming;
+    if (Object.keys(incoming).length) {
+      attribution = incoming;
+      expires = Date.now() + 30 * 86400000;
+    }
     try {
-      browser.localStorage.setItem(storageKey, JSON.stringify({ values: attribution, expires: Date.now() + 30 * 86400000 }));
+      browser.localStorage.setItem(storageKey, JSON.stringify({ values: attribution, expires }));
     } catch { /* Keep attribution in memory when storage is unavailable. */ }
     return { ...attribution };
   }

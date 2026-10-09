@@ -57,7 +57,8 @@ historicos antes de reclamar puede cambiar cual se considera el primero.
 Solo se envian codigos de campana permitidos y un UUID opaco del evento.
 No se envian nombres, correos, telefonos, user_id, order_id, importes ni contenido
 de pedidos en los nuevos parametros de Meta. El order_id solo viaja al RPC propio.
-UTM se conserva 30 dias en almacenamiento local; en correo tambien queda como
+UTM se conserva 30 dias desde la llegada de la campana en almacenamiento local;
+las visitas sin UTM no renuevan ese plazo. En correo tambien queda como
 metadata de alta, y Google recibe el retorno atribuido. Sin almacenamiento ni
 parametros de retorno no se puede garantizar atribucion entre dispositivos.
 
@@ -90,10 +91,16 @@ VITE_SUPABASE_URL=http://127.0.0.1:54329 VITE_SUPABASE_ANON_KEY=test-local-only 
 El servidor ficticio solo escucha loopback y no es un backend de produccion.
 `http://127.0.0.1:54329/` contiene enlaces ficticios de confirmacion y recuperacion.
 No desplegar este fixture ni usar sus credenciales en Supabase.
+Para verificar pedidos, escribir un nombre y un producto manual (sin guardar en
+catalogo). Usar `simulate-order-failure` en Notas simula un error de insercion;
+al cambiar la nota y guardar, el pedido se conserva solo en memoria local.
+El fixture no implementa PostgREST completo, inventario ni validacion RLS;
+esas reglas no quedan verificadas por la prueba visual.
 
 Pruebas realizadas:
-- 7 pruebas unitarias: separacion de eventos, no confirmados, duplicados,
-  bloqueo/fallo/timeout, entornos, atribucion y ausencia de PII.
+- 9 pruebas unitarias: separacion de eventos, no confirmados, duplicados,
+  bloqueo/fallo/timeout, entornos, atribucion, caducidad, almacenamiento invalido
+  y ausencia de PII.
 - SQL aislado: permisos/RLS, anonimo, cuenta historica, email pendiente, nueva
   cuenta/Google, duplicados, atribucion, pedido incompleto y propiedad cruzada.
 - Navegador local: portada y registro sin desbordamientos; 320, 390, 768 px en
@@ -102,17 +109,27 @@ Pruebas realizadas:
   confirmacion hasta Pedidos; login erroneo en espanol; retorno Google simulado;
   solicitud de recuperacion y enlace que abre Nueva contrasena, no el dashboard.
 - Capturas en `screenshots/`: escritorio, movil y formulario de registro.
+- Cierre 2026-10-09: error de insercion local mantiene formulario y muestra
+  mensaje; siguiente intento exitoso muestra Pedido guardado, navega a Pedidos
+  y permite consultar el detalle. No hubo peticiones a Meta ni a Supabase real.
+- Enlace de confirmacion con error explicito y sesion existente muestra Revisa
+  tu enlace, sin redirigir a Pedidos.
 
 No se verifico envio de correo real, OAuth contra Google real, guardado de pedidos
 en un Supabase de staging, cambio real de contrasena, pagos, ni recepcion de los
 nuevos eventos en Meta. Las pruebas no crearon usuarios ni pedidos de clientes.
-El guardado inicial de pedidos se verifico a nivel del hook y SQL aislado.
+El guardado inicial se verifico en UI con fixture en memoria, hook y SQL aislado;
+esto no sustituye comprobar el backend real de staging.
 
 ## Despliegue y pendientes antes de publicar
 
 El historial de GitHub muestra Vercel desplegando main como Production.
 `vercel.json` conserva el rewrite de SPA. La preview del PR depende de la
 integracion de Vercel; usar solo el enlace confirmado por su bot/check, no inferirlo.
+PR: https://github.com/jcnievest/neni-pro/pull/1 (borrador, no fusionado).
+Alias de preview confirmado por Vercel:
+https://neni-pro-git-codex-campana-nego-d3268a-jcnievest-5084s-projects.vercel.app
+Requiere iniciar sesion en Vercel. No se desactivo la proteccion de despliegue.
 
 1. Aplicar la migracion primero en un proyecto Supabase de staging; verificar
    que las tablas orders/deliveries coincidan. Configurar las variables de la
@@ -140,3 +157,4 @@ integracion de Vercel; usar solo el enlace confirmado por su bot/check, no infer
 ![Landing escritorio](screenshots/landing-desktop.jpg)
 ![Landing movil](screenshots/landing-mobile.jpg)
 ![Registro movil](screenshots/register-mobile.jpg)
+![Pedido ficticio guardado en memoria local](screenshots/order-success-local.jpg)
