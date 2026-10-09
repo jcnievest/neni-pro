@@ -7,12 +7,8 @@ import { Label } from "@/components/ui/label";
 import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
-
-function trackCompleteRegistration() {
-  if (typeof window !== "undefined" && typeof window.fbq === "function") {
-    window.fbq("track", "CompleteRegistration");
-  }
-}
+import { campaignAnalytics } from "@/lib/analytics";
+import { getFriendlyAuthError } from "@/lib/auth-errors";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -34,22 +30,47 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({
+        email, password,
+        options: {
+          emailRedirectTo: window.location.origin + campaignAnalytics.registrationUrl('/auth/confirm'),
+          data: { campaign_attribution: campaignAnalytics.captureAttribution() },
+        },
+      });
       if (error) throw error;
-      trackCompleteRegistration();
-      setSuccess(true);
+      campaignAnalytics.trackRequest('email');
+      if (data.session?.user?.email_confirmed_at) {
+        await campaignAnalytics.milestone('CompleteRegistration', data.session.user);
+        navigate('/pedidos', { replace: true });
+      } else {
+        setSuccess(true);
+      }
     } catch (err) {
-      setError(err.message || "No se pudo crear la cuenta");
+      setError(getFriendlyAuthError(err, "No se pudo crear la cuenta"));
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin },
-    });
+    setError('');
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin + campaignAnalytics.registrationUrl('/auth/confirm'),
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error) throw error;
+      if (!data?.url) throw new Error('No se pudo iniciar el registro con Google.');
+      campaignAnalytics.trackRequest('google');
+      window.location.assign(data.url);
+    } catch (err) {
+      setError(getFriendlyAuthError(err, 'No se pudo continuar con Google.'));
+      setLoading(false);
+    }
   };
 
   if (success) {
@@ -76,7 +97,7 @@ export default function Register() {
     <AuthLayout
       icon={UserPlus}
       title="Crea tu cuenta"
-      subtitle="Regístrate para comenzar"
+      subtitle="Organiza tu negocio. 7 días gratis, sin tarjeta."
       footer={
         <>
           ¿Ya tienes cuenta?{" "}
@@ -90,6 +111,7 @@ export default function Register() {
         variant="outline"
         className="w-full h-12 text-sm font-medium mb-6"
         onClick={handleGoogle}
+        disabled={loading}
       >
         <GoogleIcon className="w-5 h-5 mr-2" />
         Continuar con Google
@@ -105,7 +127,7 @@ export default function Register() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+        <div role="alert" className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
           {error}
         </div>
       )}

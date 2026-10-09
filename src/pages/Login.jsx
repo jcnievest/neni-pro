@@ -8,6 +8,7 @@ import { Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { getFriendlyAuthError } from "@/lib/auth-errors";
+import { campaignAnalytics } from "@/lib/analytics";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -32,17 +33,30 @@ export default function Login() {
   };
 
   const handleGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin + "/inicio" }
-    });
+    setError('');
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin + campaignAnalytics.registrationUrl('/inicio'),
+          skipBrowserRedirect: true,
+        },
+      });
+      if (error) throw error;
+      if (!data?.url) throw new Error('No se pudo iniciar sesión con Google.');
+      window.location.assign(data.url);
+    } catch (err) {
+      setError(getFriendlyAuthError(err, 'No se pudo iniciar sesión con Google.'));
+      setLoading(false);
+    }
   };
 
   return (
     <AuthLayout
       iconSrc="/icons/icon-192x192.png"
       iconAlt="Nenis Pro"
-      title="Bienvenida de nuevo"
+      title="Qué gusto verte de nuevo"
       subtitle="Inicia sesión en tu cuenta"
       footer={
         <>
@@ -57,6 +71,7 @@ export default function Login() {
         variant="outline"
         className="w-full h-12 text-sm font-medium mb-6"
         onClick={handleGoogle}
+        disabled={loading}
       >
         <GoogleIcon className="w-5 h-5 mr-2" />
         Continuar con Google
@@ -72,7 +87,7 @@ export default function Login() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+        <div role="alert" className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
           {error}
         </div>
       )}

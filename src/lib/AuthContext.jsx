@@ -2,12 +2,14 @@ import React, { createContext, useState, useContext, useEffect, useCallback } fr
 import { supabase } from '@/lib/supabase';
 import { getAccessState, getUserSubscription } from '@/lib/access';
 import { syncMailerLiteSubscriber } from '@/lib/mailerlite';
+import { campaignAnalytics } from '@/lib/analytics';
 
 const AuthContext = createContext();
 
 function isPasswordRecoveryUrl() {
   if (typeof window === 'undefined') return false;
   return (
+    window.location.pathname === '/reset-password' ||
     window.location.hash.includes('type=recovery') ||
     window.location.search.includes('type=recovery')
   );
@@ -49,6 +51,7 @@ export const AuthProvider = ({ children }) => {
       redirectToResetPassword();
     } else {
       syncMailerLiteSubscriber(currentUser);
+      void campaignAnalytics.milestone('CompleteRegistration', currentUser);
     }
 
     setIsLoadingAccess(true);
@@ -66,15 +69,25 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    campaignAnalytics.captureAttribution();
     supabase.auth.getSession().then(({ data: { session } }) => {
       applySession(session);
     });
 
+    const timers = new Set();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      applySession(session, event);
+      // Supabase requests must run outside the Auth callback's session lock.
+      const timer = setTimeout(() => {
+        timers.delete(timer);
+        applySession(session, event);
+      }, 0);
+      timers.add(timer);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      timers.forEach(clearTimeout);
+    };
   }, [applySession]);
 
   const checkUserAuth = useCallback(async () => {
