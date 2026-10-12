@@ -114,7 +114,21 @@ export default function Landing() {
           <h2 className="text-center font-display text-3xl font-bold">De la conversación al seguimiento</h2>
           <p className="mx-auto mt-4 max-w-xl text-center leading-7 text-muted-foreground">Acuerda la venta en tus redes. Después, guarda los detalles en Nenis Pro para consultar qué sigue.</p>
           <ProductExample />
-          <p className="mt-8 text-center text-sm text-[#943052]">Tip de La Tía Nenis: cada pedido merece su lugar.</p>
+          <aside aria-labelledby="tia-nenis-tip" className="mx-auto mt-10 flex max-w-xl flex-col items-center gap-5 border-t border-border pt-8 text-center sm:flex-row sm:gap-6 sm:text-left">
+            <img
+              src="/tia-nenis.png"
+              alt="La Tía Nenis con su saco rosa"
+              width="1024"
+              height="1536"
+              loading="lazy"
+              decoding="async"
+              className="h-48 w-32 shrink-0 rounded-lg object-contain"
+            />
+            <div className="min-w-0">
+              <h3 id="tia-nenis-tip" className="font-display text-lg font-bold text-[#943052]">La Tía Nenis te recomienda</h3>
+              <p className="mt-3 text-base leading-7 text-foreground">Cada pedido merece su lugar. Anótalo y dale seguimiento.</p>
+            </div>
+          </aside>
         </div>
       </section>
       <section id="precio" className="mx-auto max-w-3xl px-5 py-14 text-center">
