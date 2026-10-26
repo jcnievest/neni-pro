@@ -9,6 +9,7 @@ import { StatusBadge } from "@/components/shared/TagBadge";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
+import OrderReference from "@/components/orders/OrderReference";
 
 export default function Deliveries() {
   const qc = useQueryClient();
@@ -66,6 +67,7 @@ export default function Deliveries() {
               <Card key={o.id} className="p-3 border-0 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
+                    <OrderReference order={o} />
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-sm">{o.client_name}</p>
                       <StatusBadge status={o.status} delivered={o.delivered} />

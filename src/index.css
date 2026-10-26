@@ -54,38 +54,38 @@ html, body {
   }
 
   .dark {
-    --background: 240 10% 8%;
+    --background: 0 0% 8%;
     --foreground: 0 0% 95%;
-    --card: 240 10% 11%;
+    --card: 0 0% 12%;
     --card-foreground: 0 0% 95%;
-    --popover: 240 10% 11%;
+    --popover: 0 0% 14%;
     --popover-foreground: 0 0% 95%;
-    --primary: 340 65% 60%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 8% 16%;
+    --primary: 165 45% 65%;
+    --primary-foreground: 0 0% 8%;
+    --secondary: 0 0% 19%;
     --secondary-foreground: 0 0% 85%;
-    --muted: 240 8% 16%;
-    --muted-foreground: 240 5% 55%;
-    --accent: 25 85% 57%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62% 40%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 8% 18%;
-    --input: 240 8% 18%;
-    --ring: 340 65% 60%;
-    --chart-1: 340 65% 60%;
+    --muted: 0 0% 19%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 0 0% 24%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 80% 72%;
+    --destructive-foreground: 0 0% 8%;
+    --border: 0 0% 28%;
+    --input: 0 0% 35%;
+    --ring: 165 45% 65%;
+    --chart-1: 165 45% 65%;
     --chart-2: 25 85% 57%;
     --chart-3: 170 50% 50%;
     --chart-4: 260 50% 65%;
     --chart-5: 45 80% 60%;
-    --sidebar-background: 240 10% 8%;
+    --sidebar-background: 0 0% 8%;
     --sidebar-foreground: 0 0% 85%;
-    --sidebar-primary: 340 65% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 8% 16%;
+    --sidebar-primary: 165 45% 65%;
+    --sidebar-primary-foreground: 0 0% 8%;
+    --sidebar-accent: 0 0% 19%;
     --sidebar-accent-foreground: 0 0% 85%;
-    --sidebar-border: 240 8% 18%;
-    --sidebar-ring: 340 65% 60%;
+    --sidebar-border: 0 0% 28%;
+    --sidebar-ring: 165 45% 65%;
   }
 }
 
@@ -96,4 +96,27 @@ html, body {
   body {
     @apply bg-background text-foreground font-body;
   }
+}
+
+/* Existing status surfaces keep their meaning without bright pastel panels. */
+@layer utilities {
+  .dark :is(.bg-rose-50, .bg-rose-100, .bg-rose-50\/30,
+    .bg-amber-50, .bg-amber-100, .bg-amber-50\/60,
+    .bg-emerald-50, .bg-emerald-100, .bg-emerald-50\/30, .bg-emerald-50\/60,
+    .bg-violet-50, .bg-violet-100, .bg-violet-50\/40, .bg-violet-50\/60,
+    .bg-pink-50, .bg-blue-50, .bg-gray-100, .bg-sky-100) {
+    background-color: hsl(var(--muted));
+  }
+  .dark :is(.text-rose-500, .text-rose-600, .text-rose-700, .text-pink-600) { color: #fda4af; }
+  .dark :is(.text-emerald-600, .text-emerald-700) { color: #6ee7b7; }
+  .dark :is(.text-amber-500, .text-amber-600, .text-amber-700, .text-amber-800) { color: #fcd34d; }
+  .dark :is(.text-violet-500, .text-violet-600, .text-violet-700) { color: #c4b5fd; }
+  .dark :is(.text-blue-600, .text-sky-700) { color: #7dd3fc; }
+  .dark :is(.text-gray-500, .text-slate-600) { color: hsl(var(--muted-foreground)); }
+  .dark :is(.border-rose-100, .border-rose-200, .border-rose-300,
+    .border-emerald-100, .border-emerald-200, .border-amber-200,
+    .border-violet-200, .border-blue-200, .border-pink-200,
+    .border-gray-200, .border-sky-200) { border-color: hsl(var(--border)); }
+  .dark :is(.bg-white\/70, textarea.bg-white) { background-color: hsl(var(--card)); }
+  .dark :is(.hover\:bg-emerald-50, .hover\:bg-rose-50):hover { background-color: hsl(var(--accent)); }
 }

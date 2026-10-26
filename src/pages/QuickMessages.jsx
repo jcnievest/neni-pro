@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Copy, ShoppingBag, DollarSign, Truck, Heart, MessageCircle, Pencil, Check, ExternalLink, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import PaymentCardConfig from "@/components/payment-card/PaymentCardConfig";
+import AppearanceSettings from "@/components/AppearanceSettings";
 
 const staticTemplates = [
   {
@@ -98,6 +99,7 @@ export default function QuickMessages() {
 
   return (
     <div className="space-y-4">
+      <AppearanceSettings />
       <p className="text-sm text-muted-foreground">
         Plantillas listas para copiar y pegar en WhatsApp o Facebook.
       </p>

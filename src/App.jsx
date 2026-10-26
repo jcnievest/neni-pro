@@ -15,6 +15,7 @@ import Register from '@/pages/Register';
 import ConfirmRegistration from '@/pages/ConfirmRegistration';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
+import AppTheme from '@/components/AppTheme';
 const AppLayout = lazy(() => import('@/components/layout/AppLayout'));
 const Home = lazy(() => import('@/pages/Home'));
 const Clients = lazy(() => import('@/pages/Clients'));
@@ -29,11 +30,13 @@ const Catalog = lazy(() => import('@/pages/Catalog'));
 const ProductPublic = lazy(() => import('@/pages/ProductPublic'));
 const Promote = lazy(() => import('@/pages/Promote'));
 const OrderDetail = lazy(() => import('@/pages/OrderDetail'));
+const OrderTracking = lazy(() => import('@/pages/OrderTracking'));
 
 const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/seguimiento" element={<OrderTracking />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/auth/confirm" element={<ConfirmRegistration />} />
@@ -68,12 +71,14 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
+          <AppTheme>
           <Suspense fallback={<p role="status" className="p-8 text-center text-muted-foreground">Cargando Nenis Pro…</p>}>
             <AuthenticatedApp />
           </Suspense>
-        </Router>
         <Toaster />
         <SonnerToaster richColors position="top-center" />
+          </AppTheme>
+        </Router>
       </QueryClientProvider>
     </AuthProvider>
   )

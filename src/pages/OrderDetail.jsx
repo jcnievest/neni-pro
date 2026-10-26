@@ -7,6 +7,9 @@ import { StatusBadge } from "@/components/shared/TagBadge";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import PaymentPlanDetail from "@/components/orders/PaymentPlanDetail";
+import { getOrderItemAmount, getOrderPaymentSummary } from "@/lib/order-summary";
+import OrderReference from "@/components/orders/OrderReference";
+import OrderTrackingLink from "@/components/orders/OrderTrackingLink";
 
 export default function OrderDetail() {
   const { id } = useParams();
@@ -36,6 +39,8 @@ export default function OrderDetail() {
     );
   }
 
+  const { additionalPayments, received } = getOrderPaymentSummary(order);
+
   return (
     <div className="space-y-4 pb-6">
       <Link to="/pedidos" className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground">
@@ -44,6 +49,7 @@ export default function OrderDetail() {
 
       {/* Header */}
       <Card className="p-4 border-0 shadow-sm space-y-2">
+        <OrderReference order={order} />
         <div className="flex items-start justify-between">
           <div>
             <p className="font-display font-bold text-lg">{order.client_name}</p>
@@ -63,16 +69,22 @@ export default function OrderDetail() {
       {order.items?.length > 0 && (
         <Card className="p-4 border-0 shadow-sm space-y-2">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Productos</p>
-          {order.items.map((item, i) => (
-            <div key={i} className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <Package className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>{item.product_name}</span>
+          {order.items.map((item, i) => {
+            const { amount, usesOrderTotal } = getOrderItemAmount(item, order);
+            return (
+            <div key={i} className="flex items-start justify-between gap-3 text-sm">
+              <div className="flex min-w-0 items-center gap-2">
+                <Package className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+                <span className="break-words min-w-0">{item.product_name}</span>
                 {item.quantity > 1 && <span className="text-xs text-muted-foreground">×{item.quantity}</span>}
               </div>
-              <span className="font-medium">${(item.subtotal || item.unit_price)?.toLocaleString()}</span>
+              <div className="shrink-0 text-right">
+                <span className="font-medium">{amount === null ? "Sin desglose" : `$${amount.toLocaleString("es-MX")}`}</span>
+                {usesOrderTotal && <p className="text-xs text-muted-foreground">Total del pedido</p>}
+              </div>
             </div>
-          ))}
+            );
+          })}
         </Card>
       )}
 
@@ -90,6 +102,16 @@ export default function OrderDetail() {
               <span className="text-emerald-600 font-medium">−${order.advance?.toLocaleString()}</span>
             </div>
           )}
+          {additionalPayments > 0 && (
+            <div className="flex justify-between gap-3">
+              <span className="text-muted-foreground">Abonos posteriores</span>
+              <span className="text-emerald-600 font-medium">−${additionalPayments.toLocaleString("es-MX")}</span>
+            </div>
+          )}
+          <div className="flex justify-between gap-3">
+            <span className="text-muted-foreground">Total recibido</span>
+            <span className="text-emerald-600 font-medium">${received.toLocaleString("es-MX")}</span>
+          </div>
           <div className="flex justify-between border-t pt-1 mt-1">
             <span className="text-muted-foreground">Saldo pendiente</span>
             <span className={`font-bold ${(order.balance || 0) > 0 ? "text-rose-500" : "text-emerald-600"}`}>
@@ -100,6 +122,7 @@ export default function OrderDetail() {
       </Card>
 
       {/* Payment plan */}
+      <OrderTrackingLink orderId={order.id} />
       {order.payment_plan?.length > 0 && (
         <Card className="p-4 border-0 shadow-sm">
           <PaymentPlanDetail order={order} />
