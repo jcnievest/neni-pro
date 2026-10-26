@@ -134,6 +134,7 @@ function toPayment(row) {
 function toOrder(order, items = [], paymentRows = [], delivery = null) {
   return {
     id: order.id,
+    reference_number: order.reference_number,
     client_id: order.client_id,
     client_name: order.client_name,
     client_phone: order.client_phone,

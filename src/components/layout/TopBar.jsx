@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, Users, Package, MessageSquare, BarChart3, LogOut } from "lucide-react";
+import { Menu, Users, Package, SlidersHorizontal, BarChart3, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 
 const pageTitles = {
@@ -10,7 +10,7 @@ const pageTitles = {
   "/pedidos": "Pedidos",
   "/cobros": "Cobros pendientes",
   "/entregas": "Entregas",
-  "/mensajes": "Mensajes rápidos",
+  "/mensajes": "Personalizar negocio",
   "/reporte": "Reporte",
   "/pedidos/nuevo": "Nuevo pedido",
 };
@@ -45,7 +45,7 @@ export default function TopBar() {
   const menuItems = [
     { to: "/clientes", icon: Users, label: "Clientes" },
     { to: "/productos", icon: Package, label: "Productos" },
-    { to: "/mensajes", icon: MessageSquare, label: "Mensajes rápidos" },
+    { to: "/mensajes", icon: SlidersHorizontal, label: "Personalizar negocio" },
     { to: "/reporte", icon: BarChart3, label: "Reporte" },
   ];
 

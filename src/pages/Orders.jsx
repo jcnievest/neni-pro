@@ -3,11 +3,12 @@ import { getOrders } from "@/api/entities";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Plus, ShoppingBag, ChevronLeft } from "lucide-react";
+import { Plus, ShoppingBag } from "lucide-react";
 import { StatusBadge } from "@/components/shared/TagBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import { format } from "date-fns";
 import { useAuth } from "@/lib/AuthContext";
+import OrderReference from "@/components/orders/OrderReference";
 
 export default function Orders() {
   const { accessState } = useAuth();
@@ -20,9 +21,6 @@ export default function Orders() {
 
   return (
     <div className="space-y-4">
-      <Link to="/" className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors">
-        <ChevronLeft className="w-3.5 h-3.5 mr-0.5" /> Inicio
-      </Link>
       {canCreate && (
         <Link to="/pedidos/nuevo">
           <Button className="w-full">
@@ -44,6 +42,7 @@ export default function Orders() {
             <Card className="p-3 border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
+                  <OrderReference order={o} />
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-sm">{o.client_name}</p>
                     <StatusBadge status={o.status} delivered={o.delivered} />

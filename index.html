@@ -27,7 +27,7 @@
     <!-- Meta Pixel Code -->
     <script>
       // Preview and local builds must never send campaign data to production.
-      if (['nenispro.com', 'www.nenispro.com'].includes(window.location.hostname)) {
+      if (!/^\/seguimiento\/?$/.test(window.location.pathname) && ['nenispro.com', 'www.nenispro.com'].includes(window.location.hostname)) {
       !function(f,b,e,v,n,t,s)
       {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
       n.callMethod.apply(n,arguments):n.queue.push(arguments)};

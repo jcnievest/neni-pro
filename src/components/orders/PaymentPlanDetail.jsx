@@ -42,22 +42,27 @@ export default function PaymentPlanDetail({ order }) {
   const paymentCardData = paymentCardList[0] || null;
 
   const updateMut = useMutation({
-    mutationFn: (updatedPlan) => updateOrder(order.id, { payment_plan: updatedPlan }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
+    mutationFn: (payload) => updateOrder(order.id, payload),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      toast.success("Pago marcado como pagado ✓");
+    },
+    onError: () => {
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      toast.error("No se pudo completar el guardado del pago. Revisa el pedido antes de intentar nuevamente.");
+    },
   });
 
   const markPaid = (paymentId) => {
     const updatedPlan = plan.map((p) =>
       p.id === paymentId ? { ...p, status: "pagado", paid_date: today } : p
     );
-    updateMut.mutate(updatedPlan);
     // Also recalculate balance on order
     const paidSum = updatedPlan.filter(p => p.status === "pagado").reduce((s, p) => s + (p.amount || 0), 0);
-    const newBalance = Math.max(0, order.total - (order.advance || 0) - paidSum);
+    const newBalance = Math.max(0, Math.round((order.total - (order.advance || 0) - paidSum) * 100) / 100);
     const allPaid = updatedPlan.every(p => p.status === "pagado");
     const newStatus = allPaid ? (order.delivered ? "entregado" : "pagado") : order.status;
-    updateOrder(order.id, { balance: newBalance, status: newStatus });
-    toast.success("Pago marcado como pagado ✓");
+    updateMut.mutate({ payment_plan: updatedPlan, balance: newBalance, status: newStatus });
   };
 
   const getMsg = (p) => {
