@@ -492,6 +492,26 @@ export async function getOrders(sort = '-created_date', limit = 500) {
   return assembleOrders(data);
 }
 
+export const CLIENT_ORDERS_PAGE_SIZE = 20;
+
+export async function getClientOrders(clientId, page = 0) {
+  if (!clientId || !Number.isInteger(page) || page < 0) {
+    throw new Error('Invalid client history request');
+  }
+  const userId = await requireUserId();
+  const from = page * CLIENT_ORDERS_PAGE_SIZE;
+  const { data, count, error } = await supabase
+    .from('orders')
+    .select('*', { count: 'exact' })
+    .eq('user_id', userId)
+    .eq('client_id', clientId)
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
+    .range(from, from + CLIENT_ORDERS_PAGE_SIZE - 1);
+  if (error) throw error;
+  return { orders: await assembleOrders(data), count };
+}
+
 export async function getOrder(id) {
   const userId = await requireUserId();
   const { data, error } = await supabase
