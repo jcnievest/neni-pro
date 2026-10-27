@@ -8,6 +8,7 @@ import { Plus, Search, Phone, Pencil, Trash2, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import ClientForm from "@/components/clients/ClientForm";
+import ClientPurchasesDialog from "@/components/clients/ClientPurchasesDialog";
 import { ClientTag } from "@/components/shared/TagBadge";
 import EmptyState from "@/components/shared/EmptyState";
 import { useAuth } from "@/lib/AuthContext";
@@ -79,10 +80,10 @@ export default function Clients() {
         <div className="space-y-2">
           {filtered.map((c) => (
             <Card key={c.id} className="p-3 border-0 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-sm">{c.name}</p>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-medium text-sm break-words min-w-0">{c.name}</p>
                     <ClientTag tag={c.tag} />
                   </div>
                   {c.phone && (
@@ -90,10 +91,10 @@ export default function Clients() {
                       <Phone className="w-3 h-3" /> {c.phone}
                     </div>
                   )}
-                  {c.notes && <p className="text-xs text-muted-foreground">{c.notes}</p>}
+                  {c.notes && <p className="text-xs text-muted-foreground break-words">{c.notes}</p>}
                 </div>
                 {canEdit && (
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 shrink-0">
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditing(c)}>
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
@@ -103,6 +104,7 @@ export default function Clients() {
                   </div>
                 )}
               </div>
+              <ClientPurchasesDialog client={c} />
             </Card>
           ))}
         </div>
