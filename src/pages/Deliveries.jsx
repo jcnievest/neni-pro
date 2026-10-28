@@ -1,9 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getOrders, updateOrder } from "@/api/entities";
-import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, Truck, ChevronLeft } from "lucide-react";
+import { Check, Truck } from "lucide-react";
 import EmptyState from "@/components/shared/EmptyState";
 import { StatusBadge } from "@/components/shared/TagBadge";
 import { format } from "date-fns";
@@ -50,9 +49,6 @@ export default function Deliveries() {
 
   return (
     <div className="space-y-5">
-      <Link to="/" className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors">
-        <ChevronLeft className="w-3.5 h-3.5 mr-0.5" /> Inicio
-      </Link>
       {pending.length === 0 ? (
         <EmptyState
           icon={Truck}

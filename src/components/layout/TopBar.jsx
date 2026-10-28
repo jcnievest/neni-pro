@@ -11,7 +11,7 @@ const pageTitles = {
   "/cobros": "Cobros pendientes",
   "/entregas": "Entregas",
   "/mensajes": "Personalizar negocio",
-  "/reporte": "Reporte",
+  "/reporte": "Ventas y ganancias",
   "/pedidos/nuevo": "Nuevo pedido",
 };
 
@@ -46,7 +46,7 @@ export default function TopBar() {
     { to: "/clientes", icon: Users, label: "Clientes" },
     { to: "/productos", icon: Package, label: "Productos" },
     { to: "/mensajes", icon: SlidersHorizontal, label: "Personalizar negocio" },
-    { to: "/reporte", icon: BarChart3, label: "Reporte" },
+    { to: "/reporte", icon: BarChart3, label: "Ventas y ganancias" },
   ];
 
   return (
