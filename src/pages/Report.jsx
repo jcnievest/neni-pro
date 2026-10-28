@@ -110,7 +110,7 @@ export default function Report() {
       <div className="space-y-3">
         <div>
           <h2 className="text-lg font-display font-bold">
-            Reporte de {format(selectedDate, "MMMM yyyy", { locale: es })}
+            Resumen de {format(selectedDate, "MMMM yyyy", { locale: es })}
           </h2>
           <p className="text-sm text-muted-foreground">
             {monthOrders.length} pedido{monthOrders.length !== 1 ? "s" : ""} en el mes seleccionado

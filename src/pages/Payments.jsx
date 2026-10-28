@@ -3,10 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPaymentCard, getOrders, getClients, updateOrder } from "@/api/entities";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, DollarSign, ChevronLeft, CheckCircle2, Clock, AlertCircle, ChevronDown, ChevronUp, CreditCard } from "lucide-react";
+import { Copy, DollarSign, CheckCircle2, Clock, AlertCircle, ChevronDown, ChevronUp, CreditCard } from "lucide-react";
 import { useState as useLocalState } from "react";
 import PaymentCardModal from "@/components/payment-card/PaymentCardModal";
-import { Link } from "react-router-dom";
 import EmptyState from "@/components/shared/EmptyState";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -173,10 +172,6 @@ export default function Payments() {
 
   return (
     <div className="space-y-4">
-      <Link to="/" className="inline-flex items-center text-xs text-muted-foreground hover:text-foreground transition-colors">
-        <ChevronLeft className="w-3.5 h-3.5 mr-0.5" /> Inicio
-      </Link>
-
       {/* Summary bar */}
       {sorted.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
