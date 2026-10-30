@@ -24,10 +24,10 @@ export default function ConfirmRegistration() {
     if (callbackFailed || !user?.email_confirmed_at) return;
     let active = true;
     // Measurement is best effort; it cannot hold up a confirmed account.
-    const timer = setTimeout(() => active && navigate('/pedidos', { replace: true }), 1500);
+    const timer = setTimeout(() => active && navigate('/inicio', { replace: true }), 1500);
     campaignAnalytics.milestone('CompleteRegistration', user).finally(() => {
       clearTimeout(timer);
-      if (active) navigate('/pedidos', { replace: true });
+      if (active) navigate('/inicio', { replace: true });
     });
     return () => { active = false; clearTimeout(timer); };
   }, [user, navigate, callbackFailed]);
