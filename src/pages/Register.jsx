@@ -41,7 +41,7 @@ export default function Register() {
       campaignAnalytics.trackRequest('email');
       if (data.session?.user?.email_confirmed_at) {
         await campaignAnalytics.milestone('CompleteRegistration', data.session.user);
-        navigate('/pedidos', { replace: true });
+        navigate('/inicio', { replace: true });
       } else {
         setSuccess(true);
       }

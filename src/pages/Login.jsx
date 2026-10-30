@@ -24,7 +24,7 @@ export default function Login() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate("/inicio");
+      navigate("/inicio", { replace: true });
     } catch (err) {
       setError(getFriendlyAuthError(err, "Correo o contraseña incorrectos."));
     } finally {

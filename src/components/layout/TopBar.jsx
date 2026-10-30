@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/AuthContext";
 
 const pageTitles = {
   "/": "Neni Pro",
+  "/inicio": "Inicio",
   "/clientes": "Clientes",
   "/productos": "Productos",
   "/pedidos": "Pedidos",
