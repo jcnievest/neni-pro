@@ -94,11 +94,11 @@ export default function Landing() {
       </nav>}
     </header>
     <main id="contenido">
-      <section className="bg-[#fff4f8] px-5 py-12 text-center sm:py-16">
+      <section className="bg-[#fff4f8] px-5 py-12 text-center max-[360px]:py-8 sm:py-16">
         <div className="mx-auto max-w-3xl">
-          <p className="mb-5 text-sm font-semibold text-[#943052]">Nenis Pro · Para quienes venden por redes</p>
+          <p className="mb-5 text-sm font-semibold text-[#943052] max-[360px]:mb-4">Nenis Pro · Para quienes venden por redes</p>
           <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">Tus ventas merecen <span className="text-[#b72a62]">más que un chat.</span></h1>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-[#51434a] sm:text-lg">Organiza tus pedidos, cobros y entregas en un solo lugar, aunque vendas por WhatsApp, Facebook o Instagram.</p>
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-[#51434a] max-[360px]:mt-4 sm:text-lg">Organiza tus pedidos, cobros y entregas en un solo lugar, aunque vendas por WhatsApp, Facebook o Instagram.</p>
           <CampaignLink placement="hero" className="mt-7 w-full sm:w-auto">Prueba gratis 7 días</CampaignLink>
           <p className="mt-4 text-sm text-[#65505b]">Sin tarjeta de crédito. Después, $30 MXN al mes.</p>
         </div>
