@@ -27,10 +27,10 @@ function Brand() {
   </Link>;
 }
 
-function CampaignLink({ placement, className = '' }) {
+function CampaignLink({ placement, className = '', children = 'Organizar mi negocio' }) {
   return <Link to={campaignAnalytics.registrationUrl()} onClick={() => campaignAnalytics.trackCta(placement)}
     className={`inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#b72a62] px-6 py-3 text-center text-base font-semibold text-white hover:bg-[#9d2354] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b72a62] ${className}`}>
-    Organizar mi negocio<ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+    {children}<ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
   </Link>;
 }
 
@@ -97,10 +97,10 @@ export default function Landing() {
       <section className="bg-[#fff4f8] px-5 py-12 text-center sm:py-16">
         <div className="mx-auto max-w-3xl">
           <p className="mb-5 text-sm font-semibold text-[#943052]">Nenis Pro · Para quienes venden por redes</p>
-          <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">Ya tienes un negocio.<br /><span className="text-[#b72a62]">Dale más orden.</span></h1>
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-[#51434a] sm:text-lg">Vendes por WhatsApp, Facebook o Instagram. Registra tus clientes, pedidos y cobros en Nenis Pro y da seguimiento a lo que sigue.</p>
-          <CampaignLink placement="hero" className="mt-7 w-full sm:w-auto" />
-          <p className="mt-4 text-sm text-[#65505b]">7 días gratis, sin tarjeta. Después solo $30 al mes.</p>
+          <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">Tus ventas merecen <span className="text-[#b72a62]">más que un chat.</span></h1>
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-[#51434a] sm:text-lg">Organiza tus pedidos, cobros y entregas en un solo lugar, aunque vendas por WhatsApp, Facebook o Instagram.</p>
+          <CampaignLink placement="hero" className="mt-7 w-full sm:w-auto">Prueba gratis 7 días</CampaignLink>
+          <p className="mt-4 text-sm text-[#65505b]">Sin tarjeta de crédito. Después, $30 MXN al mes.</p>
         </div>
       </section>
       <section aria-label="Beneficios" className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:grid-cols-3">
