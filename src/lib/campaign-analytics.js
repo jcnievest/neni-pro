@@ -1,3 +1,5 @@
+import { createOnboardingState } from './onboarding-state.js';
+
 // Only campaign codes belong here. Never forward arbitrary URL parameters or user data.
 export const CAMPAIGN_VALUES = {
   utm_source: ['facebook', 'instagram', 'whatsapp', 'meta', 'google'],
@@ -17,6 +19,7 @@ export function createCampaignAnalytics(browser, claimMilestone) {
   let attribution = {};
   let captured = false;
   const pending = new Map();
+  const onboarding = createOnboardingState(browser);
   const enabled = () => ['nenispro.com', 'www.nenispro.com'].includes(browser?.location.hostname);
 
   function captureAttribution() {
@@ -67,6 +70,12 @@ export function createCampaignAnalytics(browser, claimMilestone) {
     if (['email', 'google'].includes(method)) send('RegistrationRequested', { ...captureAttribution(), method });
   }
 
+  function trackOnboarding(name, user) {
+    if (!['onboarding_viewed', 'onboarding_first_order_clicked', 'onboarding_dismissed'].includes(name)
+      || !enabled() || !user?.id || !user.email_confirmed_at) return Promise.resolve(false);
+    return onboarding.once(user.id, name, () => send(name, captureAttribution()));
+  }
+
   async function milestone(name, user, orderId = null) {
     if (!enabled() || typeof browser.fbq !== 'function' || !user?.id || !user.email_confirmed_at) return false;
     const key = `${user.id}:${name}`;
@@ -79,12 +88,13 @@ export function createCampaignAnalytics(browser, claimMilestone) {
           new Promise((resolve) => { timeout = setTimeout(() => resolve({ data: null }), 1200); }),
         ]);
         if (error || !data?.event_id) return false;
-        return send(name, cleanAttribution(data.attribution), data.event_id);
+        // Keep the existing server claim so older clients cannot count activation twice.
+        return send(name === 'FirstOrderSaved' ? 'first_order_created' : name, cleanAttribution(data.attribution), data.event_id);
       } catch { return false; } finally { clearTimeout(timeout); }
     })();
     pending.set(key, operation);
     try { return await operation; } finally { pending.delete(key); }
   }
 
-  return { captureAttribution, registrationUrl, trackCta, trackRequest, milestone };
+  return { captureAttribution, registrationUrl, trackCta, trackRequest, trackOnboarding, milestone };
 }

@@ -475,6 +475,23 @@ export async function uploadProductPhoto(file) {
 // Orders
 // ---------------------------------------------------------------------------
 
+export async function getFirstCompletedOrderId(expectedUserId) {
+  const userId = await requireUserId();
+  if (!expectedUserId || userId !== expectedUserId) throw new Error('Not authenticated');
+  // Delivery is the final save step, also used by claim_campaign_milestone.
+  const { data, error } = await supabase
+    .from('orders')
+    .select('id, deliveries!inner(order_id)')
+    .eq('user_id', userId)
+    .eq('deliveries.user_id', userId)
+    .order('created_at', { ascending: true })
+    .order('id', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.id ?? null;
+}
+
 export async function getOrders(sort = '-created_date', limit = 500) {
   const userId = await requireUserId();
   const { column, ascending } = parseSort(sort, 'created_at');

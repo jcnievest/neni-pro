@@ -12,23 +12,26 @@ import PendingCollectionsCard from "@/components/home/PendingCollectionsCard";
 import OpportunitiesSection from "@/components/home/OpportunitiesSection";
 import FrequentClientsSection from "@/components/home/FrequentClientsSection";
 import RecoverClientsSection from "@/components/home/RecoverClientsSection";
+import FirstOrderWelcome from "@/components/home/FirstOrderWelcome";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Home() {
+  const { user } = useAuth();
   const today = format(new Date(), "yyyy-MM-dd");
   const qc = useQueryClient();
 
   const { data: orders = [] } = useQuery({
-    queryKey: ["orders"],
+    queryKey: ["orders", user.id],
     queryFn: () => getOrders("-created_date", 500),
   });
 
   const { data: products = [] } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", user.id],
     queryFn: () => getProducts("name", 500),
   });
 
   const { data: settingsList = [] } = useQuery({
-    queryKey: ["settings"],
+    queryKey: ["settings", user.id],
     queryFn: () => getSettings(),
   });
   const settings = settingsList[0];
@@ -99,6 +102,7 @@ export default function Home() {
 
   return (
     <div className="space-y-4">
+      <FirstOrderWelcome key={user.id} user={user} />
       {/* Header compacto */}
       <div className="pb-1">
         <h2 className="text-lg font-display font-bold tracking-tight">Tu día de ventas</h2>
