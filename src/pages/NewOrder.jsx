@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getClients, getProducts, createClient, createOrder, createProduct } from "@/api/entities";
+import { getClients, getProducts, createClient, createOrder, createProduct, getFirstCompletedOrderId } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import PaymentPlanForm from "@/components/orders/PaymentPlanForm";
 import { useAuth } from "@/lib/AuthContext";
 import { campaignAnalytics } from "@/lib/analytics";
+import { onboardingState, firstOrderDescription } from "@/lib/onboarding-state";
+import { supabase } from "@/lib/supabase";
 
 function buildStockError(productName, available, requested) {
   return `No hay suficiente stock de ${productName}. Disponible: ${available}. Solicitado: ${requested}.`;
@@ -58,12 +60,12 @@ export default function NewOrder() {
   const [stockError, setStockError] = useState("");
 
   const { data: clients = [] } = useQuery({
-    queryKey: ["clients"],
+    queryKey: ["clients", user.id],
     queryFn: () => getClients("name", 500),
   });
 
   const { data: products = [] } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", user.id],
     queryFn: () => getProducts("name", 500),
   });
 
@@ -88,8 +90,23 @@ export default function NewOrder() {
       void campaignAnalytics.milestone('FirstOrderSaved', user, order.id);
       qc.invalidateQueries({ queryKey: ["orders"] });
       qc.invalidateQueries({ queryKey: ["products"] });
-      toast.success("¡Pedido guardado! 🎉");
+      const toastId = toast.success("¡Pedido guardado! 🎉");
       navigate("/pedidos");
+      // Best effort: neither a read failure nor blocked analytics can delay the saved order.
+      void getFirstCompletedOrderId(user.id).then(async (firstOrderId) => {
+        if (firstOrderId !== order.id) return;
+        await onboardingState.once(user.id, 'celebrated', async () => {
+          const { data } = await supabase.auth.getSession();
+          if (data.session?.user.id !== user.id) return false;
+          toast.success("¡Listo! Ya tienes tu primer pedido organizado.", {
+            id: toastId,
+            description: firstOrderDescription(order),
+            duration: 9000,
+            closeButton: true,
+          });
+          return true;
+        });
+      }).catch(() => { /* The regular saved confirmation remains visible. */ });
     },
     onError: (error) => {
       const message = error.message || "No se pudo guardar el pedido";

@@ -44,8 +44,53 @@ test('first-order event requires a successful server claim and passes no order d
   const { analytics, events, calls } = setup();
   await analytics.milestone('FirstOrderSaved', user, 'internal-order-id');
   assert.equal(calls[0].p_order_id, 'internal-order-id');
-  assert.equal(events[0][1], 'FirstOrderSaved');
+  assert.equal(events[0][1], 'first_order_created');
   assert.ok(!JSON.stringify(events).includes('internal-order-id'));
+});
+
+test('onboarding events are allowlisted, once per account/device and contain no user data', async () => {
+  const { browser, analytics, events, claim } = setup();
+  for (const name of ['onboarding_viewed', 'onboarding_first_order_clicked', 'onboarding_dismissed']) {
+    await Promise.all([analytics.trackOnboarding(name, user), analytics.trackOnboarding(name, user)]);
+    await createCampaignAnalytics(browser, claim).trackOnboarding(name, user);
+  }
+  assert.deepEqual(events.map(event => event[1]), ['onboarding_viewed', 'onboarding_first_order_clicked', 'onboarding_dismissed']);
+  await analytics.trackOnboarding('first_order_created', user);
+  await analytics.trackOnboarding('unknown', user);
+  await analytics.trackOnboarding('onboarding_viewed', null);
+  await analytics.trackOnboarding('onboarding_viewed', { ...user, email_confirmed_at: null });
+  assert.equal(events.length, 3);
+  await analytics.trackOnboarding('onboarding_viewed', { ...user, id: 'another-user' });
+  assert.equal(events.length, 4);
+  assert.ok(events.every(event => event[0] === 'trackCustom'));
+  assert.ok(!JSON.stringify(events).includes(user.id));
+  assert.ok(!JSON.stringify(events).includes(user.email));
+});
+
+test('onboarding does not bypass missing pixels, failures or non-production hosts', async () => {
+  const { browser, analytics, events } = setup();
+  const pixel = browser.fbq;
+  delete browser.fbq;
+  assert.equal(await analytics.trackOnboarding('onboarding_viewed', user), false);
+  browser.fbq = () => { throw new Error('blocked'); };
+  assert.equal(await analytics.trackOnboarding('onboarding_viewed', user), false);
+  browser.fbq = pixel;
+  assert.equal(await analytics.trackOnboarding('onboarding_viewed', user), true);
+  assert.equal(events.length, 1);
+  const preview = setup('localhost');
+  await preview.analytics.trackOnboarding('onboarding_viewed', user);
+  assert.equal(preview.events.length, 0);
+});
+
+test('first_order_created reuses the original server claim and never double emits', async () => {
+  const { analytics, browser, claim, events, calls } = setup();
+  await Promise.all([analytics.milestone('FirstOrderSaved', user, 'first'), analytics.milestone('FirstOrderSaved', user, 'first')]);
+  await createCampaignAnalytics(browser, claim).milestone('FirstOrderSaved', user, 'second');
+  assert.equal(events.length, 1);
+  assert.equal(events[0][1], 'first_order_created');
+  assert.ok(calls.every(call => call.p_event === 'FirstOrderSaved'));
+  assert.deepEqual(events[0][2], {});
+  assert.deepEqual(events[0][3], { eventID: 'opaque-event-id' });
 });
 test('missing, throwing and preview pixels do not break the app or consume milestones', async () => {
   const { analytics, browser, calls } = setup();
