@@ -64,6 +64,7 @@ test('catalog requests: PostgreSQL security, stock, idempotency and existing ord
       grant select on public.settings,public.products to anon;`);
     await db.exec(await readFile(new URL('../supabase/migrations/20261026000000_order_tracking.sql', import.meta.url), 'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/20261117000000_catalog_requests.sql', import.meta.url), 'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/20261118000000_restore_owner_isolation.sql', import.meta.url), 'utf8'));
     await query('insert into auth.users(id) values($1),($2)', [owner, other]);
     await query("insert into public.subscriptions(user_id,status) values($1,'active'),($2,'active')", [owner, other]);
     await query("insert into public.settings(user_id,catalog_slug,shop_name) values($1,'demo','Tienda ficticia'),($2,'other','Otra tienda')", [owner, other]);

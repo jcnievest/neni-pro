@@ -148,6 +148,12 @@ Preflight remoto de lectura: PostgreSQL 17.6; estructura de tablas/politicas y m
 
 ## Procedimiento de despliegue
 
+### Correccion detectada durante la publicacion
+
+La comprobacion HTTP anonima posterior al despliegue detecto una divergencia del esquema real: `clients`, `products`, `orders`, `order_items`, `payments` y `deliveries` tenian politicas `*_own`, pero RLS estaba deshabilitado. La presencia de politicas por si sola no protege las filas. No se consultaron contactos, pagos ni pedidos reales para investigar; se verifico el catalogo de PostgreSQL.
+
+`20261118000000_restore_owner_isolation.sql` vuelve a habilitar RLS en esas seis tablas, como ya prescribe `schema.sql`. No cambia politicas, filas, usuarios ni suscripciones. La prueba de regresion reproduce RLS deshabilitado y comprueba anonimato, aislamiento entre dos vendedores, lectura/escritura propia y catalogo publico mediante RPC. La prueba nativa de concurrencia y el simulador tambien aplican esta migracion. No deshabilitar RLS como rollback; investigar errores de permisos conservando el aislamiento.
+
 El usuario autorizo publicar esta rama. Se reviso el esquema productivo en modo lectura y se verificaron las escrituras con datos ficticios en bases locales aisladas. No se aprovisiono un proyecto Supabase de staging. Mantener las comprobaciones siguientes como procedimiento para futuros despliegues; no usar cuentas de clientes para probar.
 
 1. Crear/usar un proyecto Supabase de staging sin datos reales. Verificar version del esquema, aplicar las migraciones anteriores que falten y comparar la tabla `subscriptions` real con `catalog_access_allowed`. Confirmar estados, nombres de campos, unicidad por usuario y fechas con/sin hora. La comprobacion falla cerrada si la tabla no existe o las fechas son invalidas; no saltarse esta comprobacion para probar.

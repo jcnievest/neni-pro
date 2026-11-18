@@ -18,7 +18,7 @@ async function reset() {
   const schema = (await readFile(new URL('../../supabase/schema.sql', import.meta.url), 'utf8')).replace('CREATE EXTENSION IF NOT EXISTS "pgcrypto";', '').split('-- Storage bucket for product photos')[0];
   await db.exec(schema);
   await db.exec('create table subscriptions(user_id uuid primary key,status text,trial_end text); grant all on all tables in schema public to authenticated; grant select on settings,products to anon;');
-  for (const name of ['20261026000000_order_tracking.sql','20261117000000_catalog_requests.sql']) {
+  for (const name of ['20261026000000_order_tracking.sql','20261117000000_catalog_requests.sql','20261118000000_restore_owner_isolation.sql']) {
     await db.exec(await readFile(new URL(`../../supabase/migrations/${name}`, import.meta.url), 'utf8'));
   }
   await db.query('insert into auth.users(id) values($1),($2)', [owner, other]);
