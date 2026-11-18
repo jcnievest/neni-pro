@@ -1,10 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { getProducts, getSettings, getPublicProducts, getPublicSettings } from "@/api/entities";
-import { useState } from "react";
-import { Package } from "lucide-react";
+import { getProducts, getSettings } from "@/api/entities";
+import { useEffect, useState } from "react";
+import { Package, Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useSearchParams } from "react-router-dom";
+import { getPublicCatalog, recordCatalogEvent } from '@/api/catalog-requests';
+import { availabilityLabel, catalogPrice, catalogSessionId, isCatalogOffer, money, quantityIssue } from '@/lib/catalog-requests';
+import CatalogRequestForm from '@/components/catalog/CatalogRequestForm';
+import CatalogPrivacy from '@/components/catalog/CatalogPrivacy';
+import { toast } from 'sonner';
 
 // WhatsApp SVG
 const WAIcon = () => (
@@ -14,21 +19,52 @@ const WAIcon = () => (
 export default function Catalog() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all"); // all | offers
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const catalogSlug = searchParams.get("tienda");
+  return <CatalogContent key={catalogSlug || 'preview'} catalogSlug={catalogSlug} searchParams={searchParams} setSearchParams={setSearchParams} search={search} setSearch={setSearch} filter={filter} setFilter={setFilter} />;
+}
 
-  const { data: products = [] } = useQuery({
-    queryKey: ["products", catalogSlug],
-    queryFn: () =>
-      catalogSlug ? getPublicProducts(catalogSlug, "name", 500) : getProducts("name", 500),
+function CatalogContent({ catalogSlug, searchParams, setSearchParams, search, setSearch, filter, setFilter }) {
+  const [open, setOpen] = useState(false);
+  const [visit] = useState(() => catalogSessionId(catalogSlug, 'visit'));
+  const [basket, setBasket] = useState(() => {
+    try {
+      const saved = JSON.parse(window.sessionStorage.getItem(`nenis:basket:${catalogSlug}`) || '{}');
+      return Object.fromEntries(Object.entries(saved).slice(0, 20).filter(([id, qty]) => /^[a-f0-9-]{36}$/i.test(id) && Number.isInteger(Number(qty)) && Number(qty) > 0 && Number(qty) <= 1000));
+    } catch { return {}; }
   });
-
-  const { data: settingsList = [] } = useQuery({
-    queryKey: ["settings", catalogSlug],
-    queryFn: () =>
-      catalogSlug ? getPublicSettings(catalogSlug) : getSettings(),
+  const query = useQuery({
+    queryKey: ['public-catalog', catalogSlug],
+    queryFn: async () => {
+      if (catalogSlug) return getPublicCatalog(catalogSlug);
+      const products = await getProducts('name', 500);
+      const settings = await getSettings();
+      return { products, settings: settings[0] || {} };
+    }, refetchInterval: 30000,
   });
-  const settings = settingsList[0] || {};
+  const products = query.data?.products || [];
+  const settings = query.data?.settings || {};
+  const enabled = Boolean(catalogSlug && settings.catalog_orders_enabled);
+  const add = (product) => {
+    const next = Number(basket[product.id] || 0) + 1;
+    const error = quantityIssue(product, next);
+    if (error) { toast.error(error); return; }
+    if (!basket[product.id] && Object.keys(basket).length >= 20) { toast.error('Máximo 20 productos diferentes por solicitud.'); return; }
+    setBasket(old => ({ ...old, [product.id]: next }));
+    void recordCatalogEvent(catalogSlug, visit, 'catalog_product_selected');
+  };
+  useEffect(() => { try { window.sessionStorage.setItem(`nenis:basket:${catalogSlug}`, JSON.stringify(basket)); } catch { /* Selection stays in memory. */ } }, [basket, catalogSlug]);
+  useEffect(() => { if (enabled) void recordCatalogEvent(catalogSlug, visit, 'public_catalog_viewed'); }, [enabled, catalogSlug, visit]);
+  const selectedProduct = searchParams.get('seleccionar');
+  useEffect(() => {
+    if (!enabled || !selectedProduct || !query.data) return;
+    const product = query.data.products.find(p => p.id === selectedProduct);
+    if (product && !quantityIssue(product, 1)) {
+      setBasket(old => old[product.id] || Object.keys(old).length >= 20 ? old : { ...old, [product.id]: 1 });
+      void recordCatalogEvent(catalogSlug, visit, 'catalog_product_selected');
+    }
+    const next = new URLSearchParams(searchParams); next.delete('seleccionar'); setSearchParams(next, { replace: true });
+  }, [enabled, selectedProduct, query.data, catalogSlug, visit, searchParams, setSearchParams]);
   const phone = settings.whatsapp_phone?.replace(/\D/g, "");
   const fullPhone = phone?.length === 10 ? `52${phone}` : phone;
 
@@ -36,8 +72,8 @@ export default function Catalog() {
     const matchSearch =
       p.name?.toLowerCase().includes(search.toLowerCase()) ||
       p.category?.toLowerCase().includes(search.toLowerCase());
-    const matchOffer = filter === "offers" ? p.is_offer : true;
-    return matchSearch && matchOffer && (p.stock == null || p.stock > 0);
+    const matchOffer = filter === "offers" ? isCatalogOffer(p) : true;
+    return matchSearch && matchOffer && p.catalog_visible !== false && (enabled || p.made_to_order || p.stock == null || p.stock > 0);
   });
 
   const defaultMsg = `Hola, me interesa el producto *{{producto}}*. ¿Me puedes dar más información?`;
@@ -48,18 +84,23 @@ export default function Catalog() {
     const waUrl = fullPhone
       ? `https://wa.me/${fullPhone}?text=${encodeURIComponent(msg)}`
       : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-    window.open(waUrl, "_blank");
+    window.open(waUrl, "_blank", "noopener,noreferrer");
   };
 
   return (
-    <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6 space-y-5">
+    <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6 space-y-5 pb-28">
+      <CatalogPrivacy />
       {/* Header */}
       <div className="text-center space-y-1">
-        <h1 className="text-2xl font-display font-bold">{settings.shop_name || "Catálogo"}</h1>
+        <h1 className="text-2xl font-display font-bold break-words">{settings.shop_name || "Catálogo"}</h1>
         {settings.shop_description && (
-          <p className="text-sm text-muted-foreground">{settings.shop_description}</p>
+          <p className="text-sm text-muted-foreground break-words">{settings.shop_description}</p>
         )}
       </div>
+
+      {query.isPending && <p role="status">Cargando catálogo…</p>}
+      {query.isError && <div role="alert" className="space-y-2"><p>No pudimos cargar el catálogo.</p><Button variant="outline" onClick={() => query.refetch()}>Reintentar</Button></div>}
+      {!query.isPending && !query.isError && !query.data && <p role="status">Este catálogo no está disponible.</p>}
 
       {/* Search */}
       <Input placeholder="Buscar producto..." value={search}
@@ -85,10 +126,11 @@ export default function Catalog() {
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {filtered.map((p) => {
-            const displayPrice = p.is_offer && p.offer_price ? p.offer_price : p.price;
+            const displayPrice = catalogPrice(p);
+            const activeOffer = isCatalogOffer(p);
             return (
               <div key={p.id} className="bg-card rounded-2xl shadow-sm overflow-hidden border border-border/50">
-                {p.is_offer && (
+                {activeOffer && (
                   <div className="bg-rose-500 text-white text-[10px] font-bold text-center py-0.5 px-2">
                     🔥 OFERTA
                   </div>
@@ -104,16 +146,17 @@ export default function Catalog() {
                 </Link>
                 <div className="p-3 space-y-2">
                   <div>
-                    <p className="font-semibold text-sm leading-tight">{p.name}</p>
-                    {p.category && <p className="text-[10px] text-muted-foreground">{p.category}</p>}
+                    <p className="font-semibold text-sm leading-tight break-words">{p.name}</p>
+                    {p.category && <p className="text-[10px] text-muted-foreground break-words">{p.category}</p>}
                   </div>
                   <div>
-                    <p className="font-bold text-primary">${displayPrice?.toLocaleString()}</p>
-                    {p.is_offer && p.offer_price && (
+                    <p className="font-bold text-primary break-words">{money(displayPrice)}</p>
+                    {activeOffer && (
                       <p className="text-[10px] text-muted-foreground line-through">${p.price?.toLocaleString()}</p>
                     )}
                   </div>
-                  {p.is_offer && p.offer_description && (
+                  {enabled && <><p className="text-xs text-muted-foreground">{availabilityLabel(p)}</p><Button size="sm" className="w-full min-h-11 h-auto whitespace-normal text-xs" disabled={Boolean(quantityIssue(p, Number(basket[p.id] || 0) + 1))} onClick={() => add(p)}><Plus className="h-4 w-4 shrink-0" />{basket[p.id] ? `Agregar (${basket[p.id]})` : 'Seleccionar'}</Button></>}
+                  {activeOffer && p.offer_description && (
                     <p className="text-[10px] text-rose-600 font-medium">{p.offer_description}</p>
                   )}
                   <Button size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-8"
@@ -127,6 +170,12 @@ export default function Catalog() {
         </div>
       )}
 
+      {enabled && <>
+        <div className="fixed bottom-0 inset-x-0 border-t border-border bg-background p-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-20">
+          <Button className="w-full max-w-lg mx-auto flex min-h-12 whitespace-normal h-auto" disabled={!Object.keys(basket).length} onClick={() => { setOpen(true); void recordCatalogEvent(catalogSlug, visit, 'order_request_started'); }}><ShoppingBag className="h-5 w-5 shrink-0" />Revisar selección ({Object.keys(basket).length})</Button>
+        </div>
+        <CatalogRequestForm slug={catalogSlug} shopName={settings.shop_name} products={products} basket={basket} setBasket={setBasket} open={open} onOpenChange={setOpen} onRefresh={query.refetch} />
+      </>}
       <p className="text-center text-xs text-muted-foreground pb-4">Hecho con Neni Pro ✨</p>
     </div>
   );

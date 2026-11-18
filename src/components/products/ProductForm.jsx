@@ -21,6 +21,8 @@ export default function ProductForm({ product, onSubmit, onCancel }) {
     offer_expiry: product?.offer_expiry || "",
   });
   const [uploading, setUploading] = useState(false);
+  const [availability, setAvailability] = useState(product?.made_to_order ? 'on_request' : product?.stock != null ? 'stock' : 'untracked');
+  const [catalogVisible, setCatalogVisible] = useState(product?.catalog_visible ?? true);
 
   const handleImage = async (e) => {
     const file = e.target.files[0];
@@ -37,7 +39,9 @@ export default function ProductForm({ product, onSubmit, onCancel }) {
       ...form,
       price: parseFloat(form.price) || 0,
       cost: form.cost !== "" ? parseFloat(form.cost) : undefined,
-      stock: form.stock !== "" ? parseFloat(form.stock) : undefined,
+      stock: availability === 'stock' ? Number(form.stock) : null,
+      made_to_order: availability === 'on_request',
+      catalog_visible: catalogVisible,
       offer_price: form.offer_price !== "" ? parseFloat(form.offer_price) : undefined,
     });
   };
@@ -97,11 +101,17 @@ export default function ProductForm({ product, onSubmit, onCancel }) {
           <Input placeholder="Ej: ropa, joyería..." value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })} />
         </div>
-        <div className="space-y-2">
-          <Label>Stock</Label>
-          <Input type="number" inputMode="decimal" placeholder="0" value={form.stock}
-            onChange={(e) => setForm({ ...form, stock: e.target.value })} />
-        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="product-availability">Disponibilidad</Label>
+        <select id="product-availability" className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm" value={availability} onChange={e => setAvailability(e.target.value)}>
+          <option value="stock">Con control de inventario</option>
+          <option value="on_request">Bajo pedido</option>
+          <option value="untracked">Sin control de inventario</option>
+        </select>
+        {availability === 'stock' && <><Label htmlFor="product-stock">Existencias</Label><Input id="product-stock" type="number" inputMode="decimal" min="0" step="0.01" required value={form.stock} onChange={e => setForm({ ...form, stock: e.target.value })} /></>}
+        <div className="flex items-center justify-between gap-3 pt-2"><Label htmlFor="product-visible">Mostrar en el catálogo público</Label><Switch id="product-visible" checked={catalogVisible} onCheckedChange={setCatalogVisible} /></div>
       </div>
 
       {/* Oferta section */}

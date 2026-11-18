@@ -25,6 +25,15 @@ test('CTA and accepted request are separate custom events, never confirmation', 
     ['trackCustom', 'OrganizeBusinessClick'], ['trackCustom', 'RegistrationRequested'], ['trackCustom', 'RegistrationRequested'],
   ]);
 });
+test('catalog and request screens never emit campaign events or consume milestones',async()=>{
+  for(const pathname of ['/catalogo','/producto/opaque','/solicitud','/pedidos/solicitudes','/pedidos/solicitudes/opaque']){
+    const {browser,analytics,events,calls}=setup();browser.location.pathname=pathname;
+    analytics.trackCta('hero');analytics.trackRequest('email');
+    await analytics.milestone('FirstOrderSaved',user,'private-order');
+    await analytics.trackOnboarding('onboarding_viewed',user);
+    assert.equal(events.length+calls.length,0,pathname);
+  }
+});
 test('unconfirmed or missing users never claim a milestone', async () => {
   const { analytics, calls } = setup();
   await analytics.milestone('CompleteRegistration', { ...user, email_confirmed_at: null });

@@ -9,18 +9,20 @@ import EmptyState from "@/components/shared/EmptyState";
 import { format } from "date-fns";
 import { useAuth } from "@/lib/AuthContext";
 import OrderReference from "@/components/orders/OrderReference";
+import OrderRequestsNotice from '@/components/orders/OrderRequestsNotice';
 
 export default function Orders() {
-  const { accessState } = useAuth();
+  const { accessState, user } = useAuth();
   const canCreate = accessState.hasAccess;
 
   const { data: orders = [], isLoading } = useQuery({
-    queryKey: ["orders"],
+    queryKey: ["orders", user.id],
     queryFn: () => getOrders("-created_date", 200),
   });
 
   return (
     <div className="space-y-4">
+      <OrderRequestsNotice />
       {canCreate && (
         <Link to="/pedidos/nuevo">
           <Button className="w-full">
@@ -43,6 +45,7 @@ export default function Orders() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <OrderReference order={o} />
+                  {o.source === 'catalog' && <p className="text-xs text-primary">Desde el catálogo</p>}
                   <div className="flex items-center gap-2">
                     <p className="font-medium text-sm">{o.client_name}</p>
                     <StatusBadge status={o.status} delivered={o.delivered} />

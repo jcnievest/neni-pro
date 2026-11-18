@@ -15,6 +15,7 @@ function isReadOnlyRoute(pathname) {
     pathname === "/clientes" ||
     pathname === "/productos" ||
     pathname === "/pedidos" ||
+    /^\/pedidos\/solicitudes(?:\/[^/]+)?$/.test(pathname) ||
     /^\/pedido\/[^/]+$/.test(pathname)
   );
 }

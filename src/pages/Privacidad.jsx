@@ -23,6 +23,14 @@ export default function Privacidad() {
             </ul>
           </section>
 
+          <section id="solicitudes">
+            <h2 className="text-lg font-bold text-gray-800 mb-2">Solicitudes desde un catálogo público</h2>
+            <p>Al enviar una solicitud compartes tu nombre, número de WhatsApp, productos seleccionados y observaciones con el vendedor del catálogo, para que revise la disponibilidad y te contacte sobre ese pedido. La autorización del formulario es para atender esta solicitud, no para suscribirte a publicidad.</p>
+            <p className="mt-2">Nenis Pro conserva la solicitud y su historial de cambios en Supabase. Solo el vendedor puede consultar tus datos de contacto desde su cuenta. El enlace privado permite revisar productos, condiciones y estado, aceptar ajustes o cancelar antes de la confirmación; no muestra tu nombre ni tu teléfono. No compartas ese enlace con otras personas.</p>
+            <p className="mt-2">El envío no confirma una compra ni reserva existencias. Nenis Pro no procesa los pagos de estas ventas ni verifica depósitos. Conservamos un registro de la autorización y métricas de uso del catálogo, sin enviar nombres, teléfonos u observaciones a plataformas publicitarias. Estas pantallas no cargan Meta Pixel.</p>
+            <p className="mt-2">Puedes solicitar acceso, corrección o eliminación de tus datos al vendedor o a <a href="mailto:contacto@nenispro.com" className="underline">contacto@nenispro.com</a>, indicando el folio de tu solicitud.</p>
+          </section>
+
           <section>
             <h2 className="text-lg font-bold text-gray-800 mb-2">3. Finalidades del tratamiento</h2>
             <ul className="list-disc pl-5 space-y-1">

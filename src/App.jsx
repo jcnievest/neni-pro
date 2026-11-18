@@ -31,12 +31,16 @@ const ProductPublic = lazy(() => import('@/pages/ProductPublic'));
 const Promote = lazy(() => import('@/pages/Promote'));
 const OrderDetail = lazy(() => import('@/pages/OrderDetail'));
 const OrderTracking = lazy(() => import('@/pages/OrderTracking'));
+const OrderRequests = lazy(() => import('@/pages/OrderRequests'));
+const OrderRequestDetail = lazy(() => import('@/pages/OrderRequestDetail'));
+const CatalogRequestStatus = lazy(() => import('@/pages/CatalogRequestStatus'));
 
 const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/seguimiento" element={<OrderTracking />} />
+      <Route path="/solicitud" element={<CatalogRequestStatus />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/auth/confirm" element={<ConfirmRegistration />} />
@@ -49,6 +53,8 @@ const AuthenticatedApp = () => {
           <Route path="/productos" element={<Products />} />
           <Route path="/pedidos" element={<Orders />} />
           <Route path="/pedidos/nuevo" element={<NewOrder />} />
+          <Route path="/pedidos/solicitudes" element={<OrderRequests />} />
+          <Route path="/pedidos/solicitudes/:id" element={<OrderRequestDetail />} />
           <Route path="/pedido/:id" element={<OrderDetail />} />
           <Route path="/cobros" element={<Payments />} />
           <Route path="/entregas" element={<Deliveries />} />
