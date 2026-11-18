@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getClients, getProducts, createClient, createOrder, createProduct, getFirstCompletedOrderId } from "@/api/entities";
 import { useNavigate } from "react-router-dom";
@@ -58,6 +58,7 @@ export default function NewOrder() {
   const [notes, setNotes] = useState("");
   const [paymentPlan, setPaymentPlan] = useState([]);
   const [stockError, setStockError] = useState("");
+  const saveAttempt = useRef(null);
 
   const { data: clients = [] } = useQuery({
     queryKey: ["clients", user.id],
@@ -85,7 +86,11 @@ export default function NewOrder() {
   });
 
   const createOrderMut = useMutation({
-    mutationFn: (data) => createOrder(data),
+    mutationFn: (data) => {
+      const fingerprint = JSON.stringify(data);
+      if (saveAttempt.current?.fingerprint !== fingerprint) saveAttempt.current = { fingerprint, id: crypto.randomUUID() };
+      return createOrder(data, saveAttempt.current.id);
+    },
     onSuccess: (order) => {
       void campaignAnalytics.milestone('FirstOrderSaved', user, order.id);
       qc.invalidateQueries({ queryKey: ["orders"] });

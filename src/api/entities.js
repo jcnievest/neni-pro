@@ -71,6 +71,8 @@ function toProduct(row) {
     price: row.price != null ? Number(row.price) : 0,
     cost: row.cost != null ? Number(row.cost) : undefined,
     stock: row.stock != null ? Number(row.stock) : undefined,
+    made_to_order: row.made_to_order ?? false,
+    catalog_visible: row.catalog_visible ?? true,
     photo_url: row.photo_url,
     notes: row.notes,
     is_offer: row.is_offer,
@@ -92,35 +94,6 @@ function toOrderItem(row) {
   };
 }
 
-function isStockControlled(stock) {
-  return stock !== null && stock !== undefined && Number.isFinite(Number(stock));
-}
-
-function getRequestedStockByProduct(items) {
-  const requestedByProduct = new Map();
-
-  for (const item of items) {
-    if (!item.product_id) continue;
-    const quantity = Number(item.quantity) || 1;
-    if (quantity <= 0) continue;
-
-    const current = requestedByProduct.get(item.product_id) || {
-      product_id: item.product_id,
-      product_name: item.product_name,
-      quantity: 0,
-    };
-
-    current.quantity += quantity;
-    requestedByProduct.set(item.product_id, current);
-  }
-
-  return [...requestedByProduct.values()];
-}
-
-function buildStockError(productName, available, requested) {
-  return `No hay suficiente stock de ${productName}. Disponible: ${available}. Solicitado: ${requested}.`;
-}
-
 function toPayment(row) {
   return {
     id: row.id,
@@ -135,6 +108,7 @@ function toOrder(order, items = [], paymentRows = [], delivery = null) {
   return {
     id: order.id,
     reference_number: order.reference_number,
+    source: order.source || 'manual',
     client_id: order.client_id,
     client_name: order.client_name,
     client_phone: order.client_phone,
@@ -163,6 +137,7 @@ function toSettings(row) {
     catalog_wa_message: row.catalog_wa_message,
     catalog_slug: row.catalog_slug,
     catalog_public: row.catalog_public,
+    catalog_orders_enabled: row.catalog_orders_enabled ?? false,
     created_date: row.created_at,
   };
 }
@@ -287,6 +262,8 @@ const PRODUCT_COLUMNS = [
   'price',
   'cost',
   'stock',
+  'made_to_order',
+  'catalog_visible',
   'photo_url',
   'notes',
   'is_offer',
@@ -304,6 +281,8 @@ const PRODUCT_WRITABLE_KEYS = [
   'price',
   'cost',
   'stock',
+  'made_to_order',
+  'catalog_visible',
   'photo_url',
   'notes',
   'is_offer',
@@ -377,82 +356,6 @@ export async function deleteProduct(id) {
   await requireActiveAccess(userId);
   const { error } = await supabase.from('products').delete().eq('id', id).eq('user_id', userId);
   if (error) throw error;
-}
-
-async function getStockPlanForItems(userId, items) {
-  const requestedItems = getRequestedStockByProduct(items);
-  if (requestedItems.length === 0) return [];
-
-  const productIds = requestedItems.map((item) => item.product_id);
-  const { data, error } = await supabase
-    .from('products')
-    .select(PRODUCT_SELECT)
-    .eq('user_id', userId)
-    .in('id', productIds);
-  if (error) throw error;
-
-  const productsById = new Map(data.map((row) => [row.id, row]));
-  const stockPlan = [];
-
-  for (const item of requestedItems) {
-    const product = productsById.get(item.product_id);
-    if (!product || !isStockControlled(product.stock)) continue;
-
-    const available = Number(product.stock);
-    if (available < item.quantity) {
-      throw new Error(buildStockError(product.name || item.product_name, available, item.quantity));
-    }
-
-    stockPlan.push({
-      id: product.id,
-      name: product.name || item.product_name,
-      previousStock: available,
-      nextStock: available - item.quantity,
-      requested: item.quantity,
-    });
-  }
-
-  return stockPlan;
-}
-
-async function rollbackStockUpdates(userId, updatedProducts) {
-  await Promise.all(
-    updatedProducts.map((product) =>
-      supabase
-        .from('products')
-        .update({ stock: product.previousStock })
-        .eq('id', product.id)
-        .eq('user_id', userId)
-    )
-  );
-}
-
-async function decrementStockForOrder(userId, stockPlan) {
-  const updatedProducts = [];
-
-  try {
-    for (const product of stockPlan) {
-      const { data, error } = await supabase
-        .from('products')
-        .update({ stock: product.nextStock })
-        .eq('id', product.id)
-        .eq('user_id', userId)
-        .eq('stock', product.previousStock)
-        .select('id, stock');
-
-      if (error) throw error;
-      if (!data?.length) {
-        throw new Error(buildStockError(product.name, product.previousStock, product.requested));
-      }
-
-      updatedProducts.push(product);
-    }
-  } catch (error) {
-    await rollbackStockUpdates(userId, updatedProducts);
-    throw error;
-  }
-
-  return updatedProducts;
 }
 
 export async function uploadProductPhoto(file) {
@@ -542,81 +445,14 @@ export async function getOrder(id) {
   return assembled;
 }
 
-export async function createOrder(payload) {
+export async function createOrder(payload, operationId = crypto.randomUUID()) {
   const userId = await requireUserId();
   await requireActiveAccess(userId);
-  const { items = [], payment_plan = [], delivery_date, delivered = false, ...orderFields } = payload;
-  const stockPlan = await getStockPlanForItems(userId, items);
-  const updatedStockProducts = await decrementStockForOrder(userId, stockPlan);
-
-  try {
-    const { data: order, error } = await supabase
-      .from('orders')
-      .insert({
-        user_id: userId,
-        client_id: orderFields.client_id || null,
-        client_name: orderFields.client_name,
-        client_phone: orderFields.client_phone,
-        total: orderFields.total,
-        advance: orderFields.advance ?? 0,
-        balance: orderFields.balance ?? 0,
-        total_cost: orderFields.total_cost ?? 0,
-        delivery_date: delivery_date || null,
-        status: orderFields.status ?? 'apartado',
-        notes: orderFields.notes,
-        delivered,
-      })
-      .select()
-      .single();
-    if (error) throw error;
-
-    if (items.length > 0) {
-      const { error: itemsError } = await supabase.from('order_items').insert(
-        items.map((item) => ({
-          order_id: order.id,
-          user_id: userId,
-          product_id: item.product_id || null,
-          product_name: item.product_name,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          unit_cost: item.unit_cost ?? 0,
-          subtotal: item.subtotal,
-        }))
-      );
-      if (itemsError) throw itemsError;
-    }
-
-    if (payment_plan.length > 0) {
-      const { error: paymentsError } = await supabase.from('payments').insert(
-        payment_plan.map((p, i) => ({
-          id: p.id || crypto.randomUUID(),
-          order_id: order.id,
-          user_id: userId,
-          amount: p.amount,
-          due_date: p.due_date || null,
-          status: p.status ?? 'pendiente',
-          paid_date: p.paid_date || null,
-          sort_order: i,
-        }))
-      );
-      if (paymentsError) throw paymentsError;
-    }
-
-    const { error: deliveryError } = await supabase.from('deliveries').insert({
-      order_id: order.id,
-      user_id: userId,
-      delivery_date: delivery_date || null,
-      delivered,
-      status: orderFields.status,
-      notes: null,
-    });
-    if (deliveryError) throw deliveryError;
-
-    return getOrder(order.id);
-  } catch (error) {
-    await rollbackStockUpdates(userId, updatedStockProducts);
-    throw error;
-  }
+  const { data: orderId, error } = await supabase.rpc('create_order_atomic', {
+    p_operation: operationId, p_payload: payload,
+  });
+  if (error) throw error;
+  return getOrder(orderId);
 }
 
 export async function updateOrder(id, payload) {
@@ -790,11 +626,12 @@ export async function getSettings() {
 export async function upsertSettings(payload) {
   const userId = await requireUserId();
   await requireActiveAccess(userId);
-  const { data: existing } = await supabase
+  const { data: existing, error: settingsError } = await supabase
     .from('settings')
-    .select('id, catalog_slug')
+    .select('id, catalog_slug, catalog_public')
     .eq('user_id', userId)
     .maybeSingle();
+  if (settingsError) throw settingsError;
 
   const catalogSlug =
     payload.catalog_slug ||
@@ -805,7 +642,7 @@ export async function upsertSettings(payload) {
     ...payload,
     user_id: userId,
     catalog_slug: catalogSlug,
-    catalog_public: payload.catalog_public ?? true,
+    catalog_public: payload.catalog_public ?? existing?.catalog_public ?? true,
     updated_at: new Date().toISOString(),
   };
 
@@ -874,14 +711,9 @@ export async function upsertPaymentCard(payload) {
 // ---------------------------------------------------------------------------
 
 async function getSettingsByCatalogSlug(catalogSlug) {
-  const { data, error } = await supabase
-    .from('settings')
-    .select('*')
-    .eq('catalog_slug', catalogSlug)
-    .eq('catalog_public', true)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc('get_public_catalog', { p_slug: catalogSlug });
   if (error) throw error;
-  return data ? toSettings(data) : null;
+  return data?.settings || null;
 }
 
 export async function getPublicSettings(catalogSlug) {
@@ -892,29 +724,10 @@ export async function getPublicSettings(catalogSlug) {
 
 export async function getPublicProducts(catalogSlug, sort = 'name', limit = 500) {
   if (!catalogSlug) return [];
-
-  const { data: settingsRow, error: settingsError } = await supabase
-    .from('settings')
-    .select('user_id')
-    .eq('catalog_slug', catalogSlug)
-    .eq('catalog_public', true)
-    .maybeSingle();
-  if (settingsError) throw settingsError;
-  if (!settingsRow) return [];
-
-  const { column, ascending } = parseSort(sort, 'name');
-  const orderColumn = PRODUCT_COLUMNS.includes(column) ? column : 'name';
-  let query = supabase
-    .from('products')
-    .select(PRODUCT_SELECT)
-    .eq('user_id', settingsRow.user_id)
-    .order(orderColumn, { ascending });
-
-  if (limit) query = query.limit(limit);
-
-  const { data, error } = await query;
+  const { data, error } = await supabase.rpc('get_public_catalog', { p_slug: catalogSlug });
   if (error) throw error;
-  return data.map(toProduct);
+  const products = (data?.products || []).map(toProduct);
+  return limit ? products.slice(0, limit) : products;
 }
 
 export function getCatalogUrl(catalogSlug) {

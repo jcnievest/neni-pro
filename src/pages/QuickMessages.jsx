@@ -8,6 +8,9 @@ import { Copy, ShoppingBag, DollarSign, Truck, Heart, MessageCircle, Pencil, Che
 import { toast } from "sonner";
 import PaymentCardConfig from "@/components/payment-card/PaymentCardConfig";
 import AppearanceSettings from "@/components/AppearanceSettings";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/lib/AuthContext";
 
 const staticTemplates = [
   {
@@ -47,6 +50,7 @@ const staticTemplates = [
 const DEFAULT_CATALOG_MSG = "Hola, me interesa el producto *{{producto}}*. ¿Me puedes dar más información?";
 
 export default function QuickMessages() {
+  const { user, accessState } = useAuth();
   const qc = useQueryClient();
   const [editingMsg, setEditingMsg] = useState(false);
   const [draftMsg, setDraftMsg] = useState("");
@@ -57,7 +61,7 @@ export default function QuickMessages() {
   const [draftShopDesc, setDraftShopDesc] = useState("");
 
   const { data: settingsList = [] } = useQuery({
-    queryKey: ["settings"],
+    queryKey: ["settings", user.id],
     queryFn: () => getSettings(),
   });
   const settings = settingsList[0] || {};
@@ -68,6 +72,7 @@ export default function QuickMessages() {
       qc.invalidateQueries({ queryKey: ["settings"] });
       toast.success("Guardado");
     },
+    onError: error => toast.error(error.message || 'No se pudo guardar la configuración.'),
   });
 
   const copyText = (text) => {
@@ -148,6 +153,17 @@ export default function QuickMessages() {
           </div>
         )}
       </Card>
+
+      {/* Solicitudes del catálogo */}
+      <section className="space-y-3 border-y border-border py-4">
+        <h3 className="font-semibold text-sm">Solicitudes desde mi catálogo</h3>
+        <div className="flex items-center justify-between gap-4">
+          <Label htmlFor="catalog-requests" className="leading-6">Permitir que mis clientes soliciten pedidos desde mi catálogo</Label>
+          <Switch id="catalog-requests" checked={Boolean(settings.catalog_orders_enabled)} disabled={saveMut.isPending || !accessState.hasAccess}
+            onCheckedChange={value => saveMut.mutate({ catalog_orders_enabled: value })} />
+        </div>
+        {settings.catalog_orders_enabled && <a href={catalogUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ExternalLink className="h-4 w-4" /> Ver mi catálogo</a>}
+      </section>
 
       {/* Promocionar catálogo */}
       <Card className="p-4 border-0 shadow-sm space-y-3 bg-violet-50/60">

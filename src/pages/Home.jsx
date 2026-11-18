@@ -14,6 +14,7 @@ import FrequentClientsSection from "@/components/home/FrequentClientsSection";
 import RecoverClientsSection from "@/components/home/RecoverClientsSection";
 import FirstOrderWelcome from "@/components/home/FirstOrderWelcome";
 import { useAuth } from "@/lib/AuthContext";
+import OrderRequestsNotice from '@/components/orders/OrderRequestsNotice';
 
 export default function Home() {
   const { user } = useAuth();
@@ -103,6 +104,7 @@ export default function Home() {
   return (
     <div className="space-y-4">
       <FirstOrderWelcome key={user.id} user={user} />
+      <OrderRequestsNotice onlyPending />
       {/* Header compacto */}
       <div className="pb-1">
         <h2 className="text-lg font-display font-bold tracking-tight">Tu día de ventas</h2>
