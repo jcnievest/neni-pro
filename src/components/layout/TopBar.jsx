@@ -9,6 +9,7 @@ const pageTitles = {
   "/clientes": "Clientes",
   "/productos": "Productos",
   "/pedidos": "Pedidos",
+  "/pedidos/solicitudes": "Pedidos",
   "/cobros": "Cobros pendientes",
   "/entregas": "Entregas",
   "/mensajes": "Personalizar negocio",

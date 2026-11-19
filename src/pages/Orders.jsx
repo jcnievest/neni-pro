@@ -9,7 +9,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import { format } from "date-fns";
 import { useAuth } from "@/lib/AuthContext";
 import OrderReference from "@/components/orders/OrderReference";
-import OrderRequestsNotice from '@/components/orders/OrderRequestsNotice';
+import OrdersNavigation from '@/components/orders/OrdersNavigation';
 
 export default function Orders() {
   const { accessState, user } = useAuth();
@@ -22,9 +22,9 @@ export default function Orders() {
 
   return (
     <div className="space-y-4">
-      <OrderRequestsNotice />
+      <OrdersNavigation />
       {canCreate && (
-        <Link to="/pedidos/nuevo">
+        <Link to="/pedidos/nuevo" className="block">
           <Button className="w-full">
             <Plus className="w-5 h-5 mr-2" /> Nuevo pedido
           </Button>
@@ -40,7 +40,7 @@ export default function Orders() {
       ) : (
         <div className="space-y-2">
         {orders.map((o) => (
-          <Link key={o.id} to={`/pedido/${o.id}`}>
+          <Link key={o.id} to={`/pedido/${o.id}`} className="block">
             <Card className="p-3 border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">

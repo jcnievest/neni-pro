@@ -103,8 +103,6 @@ export default function Home() {
 
   return (
     <div className="space-y-4">
-      <FirstOrderWelcome key={user.id} user={user} />
-      <OrderRequestsNotice onlyPending />
       {/* Header compacto */}
       <div className="pb-1">
         <h2 className="text-lg font-display font-bold tracking-tight">Tu día de ventas</h2>
@@ -116,13 +114,17 @@ export default function Home() {
         </p>
       </div>
 
+      <OrderRequestsNotice />
+
       {/* BIG CTA */}
-      <Link to="/pedidos/nuevo">
+      <Link to="/pedidos/nuevo" className="block">
         <Button className="w-full h-12 text-sm rounded-2xl shadow-md shadow-primary/20 font-display font-semibold">
           <Plus className="w-4 h-4 mr-1.5" />
           Nuevo pedido
         </Button>
       </Link>
+
+      <FirstOrderWelcome key={user.id} user={user} />
 
       {/* Pendiente por cobrar — tarjeta destacada */}
       <PendingCollectionsCard pendingPayments={pendingPayments} />

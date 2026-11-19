@@ -114,7 +114,7 @@ export default function ProductPublic() {
           {catalogSlug && settings.catalog_orders_enabled && <>
             <p className="text-sm text-muted-foreground">{availabilityLabel(product)}</p>
             <Button asChild={!quantityIssue(product, 1)} disabled={Boolean(quantityIssue(product, 1))} className="w-full min-h-12 h-auto whitespace-normal">
-              {quantityIssue(product, 1) ? 'Agotado' : <Link to={`/catalogo?tienda=${encodeURIComponent(catalogSlug)}&seleccionar=${product.id}`}><ShoppingBag className="h-5 w-5 shrink-0" />Solicitar este producto</Link>}
+              {quantityIssue(product, 1) ? 'Agotado' : <Link to={`/catalogo?tienda=${encodeURIComponent(catalogSlug)}&seleccionar=${product.id}`}><ShoppingBag className="h-5 w-5 shrink-0" />Solicitar pedido</Link>}
             </Button>
           </>}
           <Button className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white text-base rounded-2xl"

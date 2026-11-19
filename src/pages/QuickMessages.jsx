@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSettings, upsertSettings, getCatalogUrl } from "@/api/entities";
 import { Card } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import AppearanceSettings from "@/components/AppearanceSettings";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/AuthContext";
+import { trackSellerCatalog } from '@/lib/seller-catalog-tracking';
 
 const staticTemplates = [
   {
@@ -52,6 +54,14 @@ const DEFAULT_CATALOG_MSG = "Hola, me interesa el producto *{{producto}}*. ¿Me 
 export default function QuickMessages() {
   const { user, accessState } = useAuth();
   const qc = useQueryClient();
+  const { hash } = useLocation();
+  const requestsSection = useRef(null);
+  useEffect(() => {
+    if (hash === '#solicitudes-catalogo') {
+      requestsSection.current?.scrollIntoView({ block: 'start' });
+      requestsSection.current?.focus({ preventScroll: true });
+    }
+  }, [hash]);
   const [editingMsg, setEditingMsg] = useState(false);
   const [draftMsg, setDraftMsg] = useState("");
   const [editingPhone, setEditingPhone] = useState(false);
@@ -155,13 +165,17 @@ export default function QuickMessages() {
       </Card>
 
       {/* Solicitudes del catálogo */}
-      <section className="space-y-3 border-y border-border py-4">
+      <section id="solicitudes-catalogo" ref={requestsSection} tabIndex={-1} className="scroll-mt-20 space-y-3 border-y border-border py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         <h3 className="font-semibold text-sm">Solicitudes desde mi catálogo</h3>
         <div className="flex items-center justify-between gap-4">
           <Label htmlFor="catalog-requests" className="leading-6">Permitir que mis clientes soliciten pedidos desde mi catálogo</Label>
           <Switch id="catalog-requests" checked={Boolean(settings.catalog_orders_enabled)} disabled={saveMut.isPending || !accessState.hasAccess}
             onCheckedChange={value => saveMut.mutate({ catalog_orders_enabled: value })} />
         </div>
+        {settings.catalog_public === false && <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">Tu catálogo está privado. También debes publicarlo para recibir solicitudes.</p>
+          <div className="flex items-center justify-between gap-4"><Label htmlFor="catalog-public">Publicar mi catálogo</Label><Switch id="catalog-public" checked={false} disabled={saveMut.isPending || !accessState.hasAccess} onCheckedChange={value => saveMut.mutate({ catalog_public: value })} /></div>
+        </div>}
         {settings.catalog_orders_enabled && <a href={catalogUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ExternalLink className="h-4 w-4" /> Ver mi catálogo</a>}
       </section>
 
@@ -179,7 +193,7 @@ export default function QuickMessages() {
             variant="outline"
             size="sm"
             className="flex-1"
-            onClick={() => copyText(promotionMsg)}
+            onClick={() => { void trackSellerCatalog(user.id, 'catalog_share_clicked'); copyText(promotionMsg); }}
           >
             <Copy className="w-4 h-4 mr-1" /> Copiar mensaje
           </Button>
@@ -187,14 +201,14 @@ export default function QuickMessages() {
             variant="outline"
             size="sm"
             className="flex-1"
-            onClick={() => copyText(catalogUrl)}
+            onClick={() => { void trackSellerCatalog(user.id, 'catalog_share_clicked'); copyText(catalogUrl); }}
           >
             <Copy className="w-4 h-4 mr-1" /> Copiar enlace
           </Button>
           <Button
             size="sm"
             className="bg-emerald-600 hover:bg-emerald-700 text-white px-3"
-            onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(promotionMsg)}`, "_blank")}
+            onClick={() => { void trackSellerCatalog(user.id, 'catalog_share_clicked'); window.open(`https://wa.me/?text=${encodeURIComponent(promotionMsg)}`, "_blank", "noopener,noreferrer"); }}
             title="Enviar por WhatsApp"
           >
             <Share2 className="w-4 h-4" />

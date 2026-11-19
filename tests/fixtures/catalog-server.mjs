@@ -18,7 +18,7 @@ async function reset() {
   const schema = (await readFile(new URL('../../supabase/schema.sql', import.meta.url), 'utf8')).replace('CREATE EXTENSION IF NOT EXISTS "pgcrypto";', '').split('-- Storage bucket for product photos')[0];
   await db.exec(schema);
   await db.exec('create table subscriptions(user_id uuid primary key,status text,trial_end text); grant all on all tables in schema public to authenticated; grant select on settings,products to anon;');
-  for (const name of ['20261026000000_order_tracking.sql','20261117000000_catalog_requests.sql','20261118000000_restore_owner_isolation.sql']) {
+  for (const name of ['20261026000000_order_tracking.sql','20261117000000_catalog_requests.sql','20261118000000_restore_owner_isolation.sql','20261119000000_seller_catalog_events.sql']) {
     await db.exec(await readFile(new URL(`../../supabase/migrations/${name}`, import.meta.url), 'utf8'));
   }
   await db.query('insert into auth.users(id) values($1),($2)', [owner, other]);
@@ -37,7 +37,7 @@ function session(email = 'demo@example.test') {
   return { user,access_token:`${encode({alg:'HS256',typ:'JWT'})}.${encode({sub:id,aud:'authenticated',role:'authenticated',exp:Math.floor(Date.now()/1000)+86400})}.fake-local-signature`,refresh_token:id,expires_in:86400,token_type:'bearer' };
 }
 const allowedTables = new Set(['products','clients','orders','order_items','deliveries','payments','subscriptions','settings','payment_cards','catalog_order_requests','catalog_request_audit','catalog_events']);
-const allowedRpc = new Set(['get_public_catalog','submit_catalog_request','get_catalog_request_receipt','get_catalog_request','respond_catalog_request','manage_catalog_request','record_catalog_event','create_order_atomic','manage_order_tracking','get_public_order_tracking']);
+const allowedRpc = new Set(['get_public_catalog','submit_catalog_request','get_catalog_request_receipt','get_catalog_request','respond_catalog_request','manage_catalog_request','record_catalog_event','record_seller_catalog_event','create_order_atomic','manage_order_tracking','get_public_order_tracking']);
 const ident = value => { if(!/^[a-z_]+$/.test(value)) throw new Error('Invalid fixture identifier'); return `"${value}"`; };
 let queue=Promise.resolve();
 createServer(async (req,res) => {

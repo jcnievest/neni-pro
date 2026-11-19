@@ -172,7 +172,7 @@ function CatalogContent({ catalogSlug, searchParams, setSearchParams, search, se
 
       {enabled && <>
         <div className="fixed bottom-0 inset-x-0 border-t border-border bg-background p-4 pb-[max(1rem,env(safe-area-inset-bottom))] z-20">
-          <Button className="w-full max-w-lg mx-auto flex min-h-12 whitespace-normal h-auto" disabled={!Object.keys(basket).length} onClick={() => { setOpen(true); void recordCatalogEvent(catalogSlug, visit, 'order_request_started'); }}><ShoppingBag className="h-5 w-5 shrink-0" />Revisar selección ({Object.keys(basket).length})</Button>
+          <Button className="w-full max-w-lg mx-auto flex min-h-12 whitespace-normal h-auto" disabled={!Object.keys(basket).length} onClick={() => { setOpen(true); void recordCatalogEvent(catalogSlug, visit, 'order_request_started'); }}><ShoppingBag className="h-5 w-5 shrink-0" />Solicitar pedido ({Object.keys(basket).length})</Button>
         </div>
         <CatalogRequestForm slug={catalogSlug} shopName={settings.shop_name} products={products} basket={basket} setBasket={setBasket} open={open} onOpenChange={setOpen} onRefresh={query.refetch} />
       </>}

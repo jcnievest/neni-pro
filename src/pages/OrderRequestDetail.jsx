@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Check, Copy, MessageCircle, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 import { getClients, getProducts } from '@/api/entities';
@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { trackSellerCatalog } from '@/lib/seller-catalog-tracking';
 
 export default function OrderRequestDetail() {
   return <><CatalogPrivacy /><OrderRequestPage /></>;
@@ -35,6 +36,8 @@ function RequestDetail({ request, user, canEdit }) {
   const [date, setDate] = useState(request.delivery_date || '');
   const [clientId, setClientId] = useState('');
   const [closing, setClosing] = useState(null);
+  const { search } = useLocation();
+  useEffect(() => { void trackSellerCatalog(user.id, 'order_request_review_started'); }, [user.id]);
   const { data: products = [] } = useQuery({ queryKey: ['products', user.id], queryFn: () => getProducts('name', 500) });
   const { data: clients = [] } = useQuery({ queryKey: ['clients', user.id], queryFn: () => getClients('name', 500) });
   const audit = useQuery({ queryKey: ['request-audit', user.id, request.id], queryFn: () => getRequestAudit(user.id, request.id) });
@@ -61,7 +64,7 @@ function RequestDetail({ request, user, canEdit }) {
   const controlsDisabled = !canEdit || mutation.isPending;
   const selectClass = 'w-full min-h-11 rounded-md border border-input bg-background px-2 text-sm';
   return <div className="space-y-5">
-    <Link to="/pedidos/solicitudes" className="inline-flex min-h-11 items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" />Solicitudes recibidas</Link>
+    <Link to={`/pedidos/solicitudes${search}`} className="inline-flex min-h-11 items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" />Solicitudes recibidas</Link>
     <div className="space-y-1"><h2 className="text-xl font-bold break-words">{request.buyer_name}</h2><p className="font-mono text-sm break-all">{request.folio}</p><p className="text-sm text-primary font-semibold">{requestStatuses[request.status]}</p><p className="text-sm text-muted-foreground">{new Date(request.created_at).toLocaleString('es-MX')}</p><p className="text-sm">WhatsApp: {request.buyer_phone}</p></div>
     {request.buyer_notes && <section><h3 className="font-semibold text-sm">Observaciones del comprador</h3><p className="whitespace-pre-wrap break-words text-sm">{request.buyer_notes}</p></section>}
     {editing ? <form className="space-y-4" onSubmit={e => { e.preventDefault(); mutation.mutate('adjust'); }}>

@@ -20,17 +20,21 @@ export async function recordCatalogEvent(slug, visit, event) {
 }
 
 export async function getCatalogRequests(userId, filter = 'open', page = 0) {
+  if (!userId) throw new Error('Inicia sesión para consultar tus solicitudes.');
+  if (!['open', 'waiting', 'all'].includes(filter) || !Number.isSafeInteger(page) || page < 0 || page > 10000) throw new Error('Filtro de solicitudes inválido.');
   let query = supabase.from('catalog_order_requests').select('*', { count: 'exact' }).eq('user_id', userId)
     .order('created_at', { ascending: false }).order('id').range(page * 20, page * 20 + 19);
-  if (filter === 'open') query = query.in('status', ['pending', 'adjustment_pending']);
+  if (filter === 'open') query = query.eq('status', 'pending');
+  else if (filter === 'waiting') query = query.eq('status', 'adjustment_pending');
   const { data, count, error } = await query;
   if (error) throw error;
   return { rows: data, count };
 }
 
 export async function getPendingRequestCount(userId) {
+  if (!userId) throw new Error('Inicia sesión para consultar tus solicitudes.');
   const { count, error } = await supabase.from('catalog_order_requests').select('id', { count: 'exact', head: true })
-    .eq('user_id', userId).in('status', ['pending', 'adjustment_pending']);
+    .eq('user_id', userId).eq('status', 'pending');
   if (error) throw error;
   return count;
 }
@@ -38,6 +42,7 @@ export async function getPendingRequestCount(userId) {
 export async function getSellerRequest(userId, id) {
   const { data, error } = await supabase.from('catalog_order_requests').select('*').eq('user_id', userId).eq('id', id).single();
   if (error) throw error;
+  if (!data) throw new Error('Solicitud no disponible.');
   return data;
 }
 
