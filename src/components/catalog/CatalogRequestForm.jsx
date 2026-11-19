@@ -62,7 +62,8 @@ export default function CatalogRequestForm({ slug, shopName, products, basket, s
         <DialogDescription>{shopName || 'Catálogo'} · Sujeta a confirmación, sin pago en línea.</DialogDescription></DialogHeader>
       {receipt ? <div className="space-y-4">
         <CheckCircle2 className="h-10 w-10 text-emerald-600" aria-hidden="true" />
-        <p role="status">¡Solicitud enviada! El vendedor revisará tu pedido y confirmará la disponibilidad.</p>
+        <p role="status" className="font-semibold">¡Listo! Enviamos tu solicitud al vendedor.</p>
+        <p className="text-sm text-muted-foreground">Tu pedido está pendiente de confirmación. El vendedor revisará la disponibilidad.</p>
         <p className="font-semibold break-all">{receipt.folio}</p>
         <Button asChild className="w-full min-h-11"><Link to={requestLink(receipt.token).replace(window.location.origin, '')}>Consultar solicitud</Link></Button>
         <Button variant="outline" className="w-full" onClick={() => { setReceipt(null); onOpenChange(false); }}>Seguir viendo productos</Button>

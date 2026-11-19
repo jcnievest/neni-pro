@@ -65,6 +65,7 @@ test('catalog requests: PostgreSQL security, stock, idempotency and existing ord
     await db.exec(await readFile(new URL('../supabase/migrations/20261026000000_order_tracking.sql', import.meta.url), 'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/20261117000000_catalog_requests.sql', import.meta.url), 'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/20261118000000_restore_owner_isolation.sql', import.meta.url), 'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/20261119000000_seller_catalog_events.sql', import.meta.url), 'utf8'));
     await query('insert into auth.users(id) values($1),($2)', [owner, other]);
     await query("insert into public.subscriptions(user_id,status) values($1,'active'),($2,'active')", [owner, other]);
     await query("insert into public.settings(user_id,catalog_slug,shop_name) values($1,'demo','Tienda ficticia'),($2,'other','Otra tienda')", [owner, other]);
@@ -231,6 +232,26 @@ test('catalog requests: PostgreSQL security, stock, idempotency and existing ord
       assert.equal((await query('select catalog_orders_enabled from settings where user_id=$1',[owner]))[0].catalog_orders_enabled,false);
       await seller();await query('update settings set catalog_orders_enabled=true where user_id=$1',[owner]);
       await guest();assert.ok((await submit({lines:items(made),phone:'5500000022'})).folio);
+    });
+    await t.test('seller discovery events reuse private analytics with server ownership and deduplication', async () => {
+      const visit = randomUUID();
+      const record = event => query('select record_seller_catalog_event($1,$2) as ok', [event, visit]);
+      await guest(); await assert.rejects(record('order_requests_opened'), /permission denied/);
+      await seller();
+      for (const event of ['order_requests_entry_viewed','order_requests_opened','order_request_review_started','catalog_share_clicked']) {
+        assert.equal((await record(event))[0].ok, true);
+        await record(event);
+      }
+      assert.equal((await record('order_request_confirmed'))[0].ok, false);
+      assert.equal((await record(null))[0].ok, false);
+      assert.equal((await query('select * from catalog_events where event_key=$1', [visit])).length, 4);
+      await role('authenticated', other);
+      assert.equal((await query('select * from catalog_events where event_key=$1', [visit])).length, 0);
+      await record('order_requests_opened');
+      const own = await query('select * from catalog_events where event_key=$1', [visit]);
+      assert.equal(own.length, 1); assert.equal(own[0].user_id, other);
+      assert.deepEqual(Object.keys(own[0]).sort(), ['created_at','event_key','event_name','user_id']);
+      await assert.rejects(query("insert into catalog_events(user_id,event_name,event_key) values($1,'order_requests_opened',$2)", [owner, randomUUID()]), /permission denied/);
     });
   } finally { await db.close(); }
 });

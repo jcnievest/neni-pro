@@ -7,7 +7,7 @@ const api = process.env.TEST_API || 'http://127.0.0.1:54331';
 for (const url of [origin,api]) assert.equal(new URL(url).hostname,'127.0.0.1','Never run this test on a real backend.');
 await fetch(`${api}/test/reset`,{method:'POST'});
 const browser=await chromium.launch({channel:'chrome',headless:true});
-const screenshots=new URL('../docs/catalog-requests/screenshots/',import.meta.url).pathname;
+const screenshots=process.env.SCREENSHOTS_DIR || new URL('../docs/catalog-requests/screenshots/',import.meta.url).pathname;
 await mkdir(screenshots,{recursive:true});
 const errors=[];
 async function context(viewport){
@@ -41,7 +41,7 @@ try{
   await buyer.setViewportSize({width:320,height:740});await fits(buyer);await buyer.setViewportSize({width:390,height:844});
   await card('Blusa rosa').getByRole('button',{name:'Seleccionar'}).click();
   await card('Bolsa bajo pedido').getByRole('button',{name:'Seleccionar'}).click();
-  await buyer.getByRole('button',{name:'Revisar selección (2)'}).click();
+  await buyer.getByRole('button',{name:'Solicitar pedido (2)'}).click();
   await buyer.getByLabel('Nombre',{exact:true}).fill('Comprador ficticio');
   await buyer.getByLabel('WhatsApp',{exact:true}).fill('5512345678');
   await buyer.getByLabel('Observaciones (opcional)').fill('Prueba local, sin datos reales.');
@@ -62,8 +62,8 @@ try{
   await buyer.getByText('Por confirmar',{exact:true}).waitFor();
   await fits(buyer);
   await seller.goto(`${origin}/pedidos`);
-  await seller.getByText('1 por revisar',{exact:true}).waitFor();
-  await seller.getByRole('link',{name:/Solicitudes recibidas/}).click();
+  await seller.getByRole('navigation',{name:'Vistas de pedidos'}).getByLabel('1 solicitudes por confirmar').waitFor();
+  await seller.getByRole('link',{name:/Por confirmar/}).click();
   await seller.getByRole('link').filter({hasText:'Comprador ficticio'}).click();
   await seller.getByRole('heading',{name:'Comprador ficticio'}).waitFor();
   await capture(seller,'request-seller-desktop');
@@ -102,7 +102,7 @@ try{
   await seller.getByRole('switch',{name:'Vista oscura'}).click();
   await seller.waitForFunction(()=>document.documentElement.classList.contains('dark'));
   await seller.goto(`${origin}/pedidos/solicitudes`);
-  await seller.getByRole('tab',{name:'Todas',exact:true}).click();
+  await seller.getByLabel('Estado de solicitudes').selectOption('all');
   await seller.getByRole('link').filter({hasText:'Comprador ficticio'}).click();
   await seller.getByRole('heading',{name:'Comprador ficticio'}).waitFor();
   await fits(seller);await capture(seller,'request-seller-dark-mobile');
