@@ -1,6 +1,8 @@
 // Local-only disposable PostgreSQL fixture. Never deploy this server or its fake Auth.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { storageSchema } from './storage-schema.mjs';
+import { handleCatalogPresentation } from '../../server/catalog-presentation.js';
 const { PGlite } = await import(process.env.PGLITE_MODULE);
 const origin = process.env.APP_ORIGIN || 'http://127.0.0.1:5176';
 const port = Number(process.env.PORT || 54331);
@@ -8,6 +10,7 @@ const owner = '10000000-0000-4000-8000-000000000001';
 const other = '10000000-0000-4000-8000-000000000002';
 const ids = ['20000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000003','20000000-0000-4000-8000-000000000004'];
 let db;
+const storedImages = new Map();
 async function reset() {
   if (db) await db.close();
   db = new PGlite();
@@ -15,10 +18,12 @@ async function reset() {
     create table auth.users(id uuid primary key,created_at timestamptz default now());
     create function auth.uid() returns uuid language sql as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
     grant usage on schema auth to anon,authenticated;`);
-  const schema = (await readFile(new URL('../../supabase/schema.sql', import.meta.url), 'utf8')).replace('CREATE EXTENSION IF NOT EXISTS "pgcrypto";', '').split('-- Storage bucket for product photos')[0];
+  await db.exec(storageSchema);
+  storedImages.clear();
+  const schema = (await readFile(new URL('../../supabase/schema.sql', import.meta.url), 'utf8')).replace('CREATE EXTENSION IF NOT EXISTS "pgcrypto";', '');
   await db.exec(schema);
-  await db.exec('create table subscriptions(user_id uuid primary key,status text,trial_end text); grant all on all tables in schema public to authenticated; grant select on settings,products to anon;');
-  for (const name of ['20261026000000_order_tracking.sql','20261117000000_catalog_requests.sql','20261118000000_restore_owner_isolation.sql','20261119000000_seller_catalog_events.sql']) {
+  await db.exec('create table subscriptions(user_id uuid primary key,status text,trial_end text); grant all on all tables in schema public to authenticated,service_role; grant select on settings,products to anon;');
+  for (const name of ['20261026000000_order_tracking.sql','20261117000000_catalog_requests.sql','20261118000000_restore_owner_isolation.sql','20261119000000_seller_catalog_events.sql','20261122000000_catalog_presentation.sql']) {
     await db.exec(await readFile(new URL(`../../supabase/migrations/${name}`, import.meta.url), 'utf8'));
   }
   await db.query('insert into auth.users(id) values($1),($2)', [owner, other]);
@@ -39,6 +44,40 @@ function session(email = 'demo@example.test') {
 const allowedTables = new Set(['products','clients','orders','order_items','deliveries','payments','subscriptions','settings','payment_cards','catalog_order_requests','catalog_request_audit','catalog_events']);
 const allowedRpc = new Set(['get_public_catalog','submit_catalog_request','get_catalog_request_receipt','get_catalog_request','respond_catalog_request','manage_catalog_request','record_catalog_event','record_seller_catalog_event','create_order_atomic','manage_order_tracking','get_public_order_tracking']);
 const ident = value => { if(!/^[a-z_]+$/.test(value)) throw new Error('Invalid fixture identifier'); return `"${value}"`; };
+// Exercise the real HTTP/image handler; only its Supabase transport is local/fake.
+const admin = {
+  auth: { getUser: async token => {
+    try {
+      const id=JSON.parse(Buffer.from(token.split('.')[1],'base64url')).sub;
+      return { data: { user: token.endsWith('.fake-local-signature') && [owner,other].includes(id) ? {id} : null } };
+    } catch { return {data:{user:null},error:new Error('Invalid token')}; }
+  } },
+  async rpc(name,args) {
+    if (!['catalog_access_allowed','save_catalog_presentation'].includes(name)) throw new Error('Unexpected admin RPC');
+    try {
+      const keys=Object.keys(args);
+      const result=await db.query(`select public.${ident(name)}(${keys.map((k,i)=>`${ident(k)}=>$${i+1}`).join(',')}) as value`,Object.values(args));
+      return {data:result.rows[0].value};
+    } catch(error) { return {error}; }
+  },
+  from(table) {
+    if(table!=='payment_cards')throw new Error('Unexpected admin table');
+    let uid;
+    const query={select(){return query;},eq(key,value){if(key!=='user_id')throw new Error('Missing owner');uid=value;return query;},
+      async maybeSingle(){try{return {data:(await db.query('select logo_url from payment_cards where user_id=$1',[uid])).rows[0]||null};}catch(error){return {error};}}};
+    return query;
+  },
+  storage:{from(bucket){
+    if(bucket!=='product-photos')throw new Error('Unexpected bucket');
+    return {
+      getPublicUrl:path=>({data:{publicUrl:`http://127.0.0.1:${port}/storage/v1/object/public/product-photos/${path}`}}),
+      async upload(path,bytes,options){
+        try {await db.query('insert into storage.objects(bucket_id,name,metadata) values($1,$2,$3)',[bucket,path,JSON.stringify({mimetype:options.contentType,size:bytes.length})]);storedImages.set(path,bytes);return {};}catch(error){return {error};}
+      },
+      async remove(paths){for(const path of paths){await db.query('delete from storage.objects where bucket_id=$1 and name=$2',[bucket,path]);storedImages.delete(path);}return {};},
+    };
+  }},
+};
 let queue=Promise.resolve();
 createServer(async (req,res) => {
   res.setHeader('Access-Control-Allow-Origin',origin);
@@ -51,6 +90,15 @@ createServer(async (req,res) => {
   queue=queue.then(async()=>{
     const url=new URL(req.url,'http://127.0.0.1'); const input=raw?JSON.parse(raw):{};
     if(url.pathname==='/test/reset'){await reset();respond(200,{ok:true});return;}
+    if(url.pathname.startsWith('/storage/v1/object/public/product-photos/')){
+      const image=storedImages.get(url.pathname.split('/product-photos/')[1]);
+      res.writeHead(image?200:404,{'Content-Type':image?'image/webp':'text/plain'});res.end(image||'Not found');return;
+    }
+    if(url.pathname==='/api/catalog-presentation'){
+      await db.exec('reset role; set role service_role');
+      const request=new Request(`${origin}${url.pathname}`,{method:req.method,headers:req.headers,...(raw?{body:raw}:{})});
+      const result=await handleCatalogPresentation(request,admin);respond(result.status,await result.json());return;
+    }
     let uid='';
     try { const token=req.headers.authorization?.slice(7).split('.')[1]; if(token)uid=JSON.parse(Buffer.from(token,'base64url')).sub; } catch { /* Anonymous fixture visitor. */ }
     if(![owner,other].includes(uid))uid='';

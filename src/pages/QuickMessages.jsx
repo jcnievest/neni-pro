@@ -1,18 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import { useLocation } from 'react-router-dom';
+import { useState } from "react";
+import { Navigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getSettings, upsertSettings, getCatalogUrl } from "@/api/entities";
+import { getSettings, upsertSettings } from "@/api/entities";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, ShoppingBag, DollarSign, Truck, Heart, MessageCircle, Pencil, Check, ExternalLink, Share2 } from "lucide-react";
+import { Copy, ShoppingBag, DollarSign, Truck, Heart, MessageCircle, Pencil, Check } from "lucide-react";
 import { toast } from "sonner";
 import PaymentCardConfig from "@/components/payment-card/PaymentCardConfig";
 import AppearanceSettings from "@/components/AppearanceSettings";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/AuthContext";
-import { trackSellerCatalog } from '@/lib/seller-catalog-tracking';
 
 const staticTemplates = [
   {
@@ -49,21 +46,10 @@ const staticTemplates = [
   },
 ];
 
-const DEFAULT_CATALOG_MSG = "Hola, me interesa el producto *{{producto}}*. ¿Me puedes dar más información?";
-
 export default function QuickMessages() {
-  const { user, accessState } = useAuth();
+  const { user } = useAuth();
   const qc = useQueryClient();
   const { hash } = useLocation();
-  const requestsSection = useRef(null);
-  useEffect(() => {
-    if (hash === '#solicitudes-catalogo') {
-      requestsSection.current?.scrollIntoView({ block: 'start' });
-      requestsSection.current?.focus({ preventScroll: true });
-    }
-  }, [hash]);
-  const [editingMsg, setEditingMsg] = useState(false);
-  const [draftMsg, setDraftMsg] = useState("");
   const [editingPhone, setEditingPhone] = useState(false);
   const [draftPhone, setDraftPhone] = useState("");
   const [editingShop, setEditingShop] = useState(false);
@@ -90,14 +76,7 @@ export default function QuickMessages() {
     toast.success("Mensaje copiado");
   };
 
-  const catalogMsg = settings.catalog_wa_message || DEFAULT_CATALOG_MSG;
   const catalogPhone = settings.whatsapp_phone || "";
-  const catalogUrl = getCatalogUrl(settings.catalog_slug);
-
-  const promotionMsg = `¡Hola! 🛍️ ${settings.shop_name ? `Te comparto el catálogo de ${settings.shop_name}` : "Te comparto mi catálogo"}. Aquí puedes ver todos mis productos disponibles:\n👉 ${catalogUrl}\n¡Cualquier duda con gusto te ayudo! 😊`;
-
-  const startEditMsg = () => { setDraftMsg(catalogMsg); setEditingMsg(true); };
-  const saveMsg = () => { saveMut.mutate({ catalog_wa_message: draftMsg }); setEditingMsg(false); };
 
   const startEditPhone = () => { setDraftPhone(catalogPhone); setEditingPhone(true); };
   const savePhone = () => { saveMut.mutate({ whatsapp_phone: draftPhone }); setEditingPhone(false); };
@@ -112,6 +91,8 @@ export default function QuickMessages() {
     setEditingShop(false);
   };
 
+  if (hash === '#solicitudes-catalogo') return <Navigate to="/mi-catalogo#solicitudes-catalogo" replace />;
+
   return (
     <div className="space-y-4">
       <AppearanceSettings />
@@ -122,14 +103,14 @@ export default function QuickMessages() {
       {/* Tarjeta de cobro */}
       <PaymentCardConfig />
 
-      {/* Personalización del catálogo */}
+      {/* Datos generales: se comparten con el catálogo sin campos duplicados. */}
       <Card className="p-4 border-0 shadow-sm space-y-3 bg-primary/5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center">
               <ShoppingBag className="w-4 h-4 text-primary" />
             </div>
-            <h3 className="font-semibold text-sm">Mi tienda (catálogo público)</h3>
+            <h3 className="font-semibold text-sm">Datos del negocio</h3>
           </div>
           {!editingShop && (
             <Button variant="ghost" size="sm" className="h-7 px-2" onClick={startEditShop}>
@@ -164,65 +145,13 @@ export default function QuickMessages() {
         )}
       </Card>
 
-      {/* Solicitudes del catálogo */}
-      <section id="solicitudes-catalogo" ref={requestsSection} tabIndex={-1} className="scroll-mt-20 space-y-3 border-y border-border py-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-        <h3 className="font-semibold text-sm">Solicitudes desde mi catálogo</h3>
-        <div className="flex items-center justify-between gap-4">
-          <Label htmlFor="catalog-requests" className="leading-6">Permitir que mis clientes soliciten pedidos desde mi catálogo</Label>
-          <Switch id="catalog-requests" checked={Boolean(settings.catalog_orders_enabled)} disabled={saveMut.isPending || !accessState.hasAccess}
-            onCheckedChange={value => saveMut.mutate({ catalog_orders_enabled: value })} />
-        </div>
-        {settings.catalog_public === false && <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">Tu catálogo está privado. También debes publicarlo para recibir solicitudes.</p>
-          <div className="flex items-center justify-between gap-4"><Label htmlFor="catalog-public">Publicar mi catálogo</Label><Switch id="catalog-public" checked={false} disabled={saveMut.isPending || !accessState.hasAccess} onCheckedChange={value => saveMut.mutate({ catalog_public: value })} /></div>
-        </div>}
-        {settings.catalog_orders_enabled && <a href={catalogUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 text-sm underline"><ExternalLink className="h-4 w-4" /> Ver mi catálogo</a>}
-      </section>
-
-      {/* Promocionar catálogo */}
-      <Card className="p-4 border-0 shadow-sm space-y-3 bg-violet-50/60">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center">
-            <ExternalLink className="w-4 h-4 text-violet-600" />
-          </div>
-          <h3 className="font-semibold text-sm">Promocionar mi catálogo</h3>
-        </div>
-        <p className="text-sm text-muted-foreground leading-relaxed">{promotionMsg}</p>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => { void trackSellerCatalog(user.id, 'catalog_share_clicked'); copyText(promotionMsg); }}
-          >
-            <Copy className="w-4 h-4 mr-1" /> Copiar mensaje
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => { void trackSellerCatalog(user.id, 'catalog_share_clicked'); copyText(catalogUrl); }}
-          >
-            <Copy className="w-4 h-4 mr-1" /> Copiar enlace
-          </Button>
-          <Button
-            size="sm"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3"
-            onClick={() => { void trackSellerCatalog(user.id, 'catalog_share_clicked'); window.open(`https://wa.me/?text=${encodeURIComponent(promotionMsg)}`, "_blank", "noopener,noreferrer"); }}
-            title="Enviar por WhatsApp"
-          >
-            <Share2 className="w-4 h-4" />
-          </Button>
-        </div>
-      </Card>
-
-      {/* Catálogo config */}
+      {/* Contacto general */}
       <Card className="p-4 border-0 shadow-sm space-y-3 bg-emerald-50/60">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-emerald-100 flex items-center justify-center">
             <MessageCircle className="w-4 h-4 text-emerald-600" />
           </div>
-          <h3 className="font-semibold text-sm">Mensaje del catálogo público</h3>
+          <h3 className="font-semibold text-sm">Contacto del negocio</h3>
         </div>
 
         {/* Teléfono */}
@@ -250,41 +179,6 @@ export default function QuickMessages() {
           )}
         </div>
 
-        {/* Mensaje */}
-        <div className="space-y-1">
-          <p className="text-xs text-muted-foreground font-medium">
-            Mensaje predeterminado <span className="text-emerald-600 font-semibold">{"{{producto}}"}</span> = nombre del producto
-          </p>
-          {editingMsg ? (
-            <div className="space-y-2">
-              <textarea
-                value={draftMsg}
-                onChange={(e) => setDraftMsg(e.target.value)}
-                rows={3}
-                className="w-full rounded-lg border border-input bg-white px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring"
-              />
-              <Button size="sm" className="w-full h-8" onClick={saveMsg}>
-                <Check className="w-3.5 h-3.5 mr-1" /> Guardar mensaje
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">{catalogMsg}</p>
-              <Button variant="ghost" size="sm" className="h-7 px-2 shrink-0" onClick={startEditMsg}>
-                <Pencil className="w-3 h-3" />
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={() => copyText(catalogMsg)}
-        >
-          <Copy className="w-4 h-4 mr-2" /> Copiar mensaje
-        </Button>
       </Card>
 
       {/* Static templates */}

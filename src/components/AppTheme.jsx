@@ -1,7 +1,7 @@
 import { ThemeProvider } from "next-themes";
 import { useLocation } from "react-router-dom";
 
-const appPaths = /^\/(inicio|clientes|productos|pedidos|pedido|cobros|entregas|mensajes|reporte|promocionar)(\/|$)/;
+const appPaths = /^\/(inicio|clientes|productos|pedidos|pedido|cobros|entregas|mensajes|mi-catalogo|reporte|promocionar)(\/|$)/;
 
 export default function AppTheme({ children }) {
   const { pathname } = useLocation();

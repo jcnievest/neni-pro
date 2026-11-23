@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
+import { storageSchema } from './fixtures/storage-schema.mjs';
 import { availabilityLabel, catalogPrice, quantityIssue, requestLink, whatsappLink, catalogSessionId } from '../src/lib/catalog-requests.js';
 
 test('catalog prices, offer expiry and the three inventory modes', () => {
@@ -56,8 +57,9 @@ test('catalog requests: PostgreSQL security, stock, idempotency and existing ord
       create function auth.uid() returns uuid language sql as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
       grant usage on schema auth to anon,authenticated;
       create schema storage;`);
+    await db.exec(storageSchema);
     const schema = (await readFile(new URL('../supabase/schema.sql', import.meta.url), 'utf8'))
-      .replace('CREATE EXTENSION IF NOT EXISTS "pgcrypto";', '').split('-- Storage bucket for product photos')[0];
+      .replace('CREATE EXTENSION IF NOT EXISTS "pgcrypto";', '');
     await db.exec(schema);
     await db.exec(`create table public.subscriptions(user_id uuid primary key, status text, expires_at text, trial_end text);
       grant all on all tables in schema public to authenticated;
@@ -66,6 +68,7 @@ test('catalog requests: PostgreSQL security, stock, idempotency and existing ord
     await db.exec(await readFile(new URL('../supabase/migrations/20261117000000_catalog_requests.sql', import.meta.url), 'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/20261118000000_restore_owner_isolation.sql', import.meta.url), 'utf8'));
     await db.exec(await readFile(new URL('../supabase/migrations/20261119000000_seller_catalog_events.sql', import.meta.url), 'utf8'));
+    await db.exec(await readFile(new URL('../supabase/migrations/20261122000000_catalog_presentation.sql', import.meta.url), 'utf8'));
     await query('insert into auth.users(id) values($1),($2)', [owner, other]);
     await query("insert into public.subscriptions(user_id,status) values($1,'active'),($2,'active')", [owner, other]);
     await query("insert into public.settings(user_id,catalog_slug,shop_name) values($1,'demo','Tienda ficticia'),($2,'other','Otra tienda')", [owner, other]);

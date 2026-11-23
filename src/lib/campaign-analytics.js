@@ -21,7 +21,7 @@ export function createCampaignAnalytics(browser, claimMilestone) {
   const pending = new Map();
   const onboarding = createOnboardingState(browser);
   const enabled = () => ['nenispro.com', 'www.nenispro.com'].includes(browser?.location.hostname)
-    && !/^\/(catalogo|producto|solicitud|pedidos\/solicitudes)(\/|$)/.test(browser?.location.pathname || '');
+    && !/^\/(catalogo|mi-catalogo|producto|solicitud|pedidos\/solicitudes)(\/|$)/.test(browser?.location.pathname || '');
 
   function captureAttribution() {
     if (!browser) return {};

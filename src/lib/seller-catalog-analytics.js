@@ -1,6 +1,7 @@
 export const SELLER_CATALOG_EVENTS = [
   'order_requests_entry_viewed', 'order_requests_opened',
   'order_request_review_started', 'catalog_share_clicked',
+  'catalog_menu_opened', 'catalog_logo_uploaded', 'catalog_preview_opened',
 ];
 
 // One signal per seller/event/tab session. Only an event name and random key leave the client.
