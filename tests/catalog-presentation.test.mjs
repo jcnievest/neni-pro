@@ -6,9 +6,32 @@ import sharp from 'sharp';
 import { handleCatalogPresentation, normalizeLogo } from '../server/catalog-presentation.js';
 import { logoFileIssue, logoMime, safeLogoUrl, LOGO_MAX_BYTES } from '../src/lib/catalog-logo.js';
 import { storageSchema } from './fixtures/storage-schema.mjs';
+import endpoint from '../api/catalog-presentation.js';
 
 const source = async (format = 'png', width = 900, height = 300) => sharp({ create: { width, height, channels: 4, background: '#127263' } }).toFormat(format).toBuffer();
 const image = bytes => ({ type: logoMime(bytes), data: bytes.toString('base64') });
+
+test('Vercel entry point rejects invalid configuration without leaking values or throwing', async () => {
+  const names=['SUPABASE_URL','VITE_SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY'];
+  const original=Object.fromEntries(names.map(name=>[name,process.env[name]]));
+  try {
+    process.env.SUPABASE_SERVICE_ROLE_KEY='server-test-key-not-a-real-secret';
+    process.env.VITE_SUPABASE_URL='invalid-environment-url';
+    for(const value of [undefined,'invalid-server-url','ftp://example.test']) {
+      if(value===undefined)delete process.env.SUPABASE_URL;else process.env.SUPABASE_URL=value;
+      const response=await endpoint.fetch(new Request('https://app.test/api/catalog-presentation',{method:'POST'}));
+      assert.equal(response.status,503);
+      const body=await response.text();
+      assert.ok(!body.includes('server-test-key'));assert.ok(!body.includes('invalid-server-url'));
+    }
+    process.env.SUPABASE_URL=' https://test.supabase.co \n';
+    assert.equal((await endpoint.fetch(new Request('https://app.test/api/catalog-presentation',{method:'POST'}))).status,401);
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    assert.equal((await endpoint.fetch(new Request('https://app.test/api/catalog-presentation',{method:'POST'}))).status,503);
+  } finally {
+    for(const name of names){if(original[name]===undefined)delete process.env[name];else process.env[name]=original[name];}
+  }
+});
 
 test('logo client allowlist, size, content signatures and safe legacy URLs', async () => {
   for (const format of ['png','jpeg','webp']) {

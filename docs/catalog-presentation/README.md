@@ -32,6 +32,7 @@ Durante la prueba movil se encontro un contenedor de notificaciones vacio que in
 - El endpoint Node de Vercel `/api/catalog-presentation` usa **sharp ya instalado**. Decodifica con limite de 16 megapixeles, rechaza imagenes multipagina, aplica orientacion, reduce a 512 x 512 sin recortar/ampliar, elimina metadatos y vuelve a codificar a WebP (maximo 512 KB). No hay dependencias nuevas del proyecto.
 - Archivo final: `product-photos/<usuario-autenticado>/catalog-logos/<uuid-nuevo>.webp`. Nunca se usa el nombre del archivo proporcionado ni un ID de usuario enviado por el navegador.
 - El servidor valida el JWT mediante Supabase Auth y el acceso mediante la funcion existente `catalog_access_allowed`. La clave administrativa solo existe en servidor.
+- La vista previa revelo una URL VITE de Supabase invalida, que el cliente anterior suplia con su fallback. Se configura `SUPABASE_URL` explicita para el servidor; el endpoint devuelve 503 controlado si la configuracion falta o es invalida, sin revelar valores.
 - Politicas restrictivas impiden escrituras directas de anon/authenticated en ese prefijo, incluso movimientos/UPDATE. El resto de fotos de productos conserva sus permisos. El servidor escribe usando service_role solo despues de validar y decodificar.
 - El guard de `logo_url` exige un objeto WebP existente, del mismo usuario y dentro del limite de tamaño. Referencias anteriores sin cambios se conservan. El catalogo solo recibe `logo_url`, no columnas bancarias.
 - Nombre, descripcion y referencia se guardan atomicamente mediante `save_catalog_presentation`, accesible solo a service_role. No toca el resto de campos comerciales. Un fallo SQL no deja nombre guardado con imagen fallida.
@@ -65,7 +66,7 @@ Eventos deduplicados por vendedor/evento/sesion de pestaña como en la etapa ant
 
 ## Verificacion local
 
-- 81 pruebas Node/PGlite aprobadas, cero fallos/omisiones: archivos y transformacion, HTTP y auth, RLS con dos vendedores, aislamiento de referencias, atomicidad, enlace estable, privacidad y regresion comercial.
+- 82 pruebas Node/PGlite aprobadas, cero fallos/omisiones: archivos y transformacion, HTTP y auth, configuracion del endpoint Vercel, RLS con dos vendedores, aislamiento de referencias, atomicidad, enlace estable, privacidad y regresion comercial.
 - Playwright de personalizacion: menu a primer clic, teclado, subir/reemplazar/eliminar, errores y reintentos, preview, dos vendedores, catalogo privado, enlace anterior, compartir/WhatsApp, envio y confirmacion de solicitud, configuracion general, 320/390/1280 px y modo oscuro.
 - Playwright de solicitudes: precios/stock, consentimiento, recuperacion de envio, modificacion y aceptacion, conversion sin duplicidad, cobros, entregas, pedido manual y seguimiento.
 - Playwright de visibilidad: contadores, filtros, paginacion, historial, aislamiento entre vendedores y acceso al vencer la prueba.
