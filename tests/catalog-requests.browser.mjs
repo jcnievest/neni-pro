@@ -31,7 +31,7 @@ try{
   await seller.getByLabel('Contraseña',{exact:true}).fill('test-password');
   await seller.getByRole('button',{name:'Iniciar sesión',exact:true}).click();
   await seller.waitForURL('**/inicio');
-  await seller.goto(`${origin}/mensajes`);
+  await seller.goto(`${origin}/mi-catalogo`);
   const toggle=seller.getByRole('switch',{name:'Permitir que mis clientes soliciten pedidos desde mi catálogo'});
   await toggle.click();await seller.getByText('Guardado',{exact:true}).waitFor();
   await buyer.reload();await buyer.getByRole('button',{name:'Seleccionar',exact:true}).first().waitFor();

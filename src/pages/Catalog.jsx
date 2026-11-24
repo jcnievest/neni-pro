@@ -9,6 +9,8 @@ import { getPublicCatalog, recordCatalogEvent } from '@/api/catalog-requests';
 import { availabilityLabel, catalogPrice, catalogSessionId, isCatalogOffer, money, quantityIssue } from '@/lib/catalog-requests';
 import CatalogRequestForm from '@/components/catalog/CatalogRequestForm';
 import CatalogPrivacy from '@/components/catalog/CatalogPrivacy';
+import CatalogIdentity from '@/components/catalog/CatalogIdentity';
+import { getCatalogLogo } from '@/api/catalog-presentation';
 import { toast } from 'sonner';
 
 // WhatsApp SVG
@@ -39,7 +41,8 @@ function CatalogContent({ catalogSlug, searchParams, setSearchParams, search, se
       if (catalogSlug) return getPublicCatalog(catalogSlug);
       const products = await getProducts('name', 500);
       const settings = await getSettings();
-      return { products, settings: settings[0] || {} };
+      const logo_url = await getCatalogLogo();
+      return { products, settings: { ...settings[0], logo_url } };
     }, refetchInterval: 30000,
   });
   const products = query.data?.products || [];
@@ -91,12 +94,7 @@ function CatalogContent({ catalogSlug, searchParams, setSearchParams, search, se
     <div className="min-h-screen bg-background max-w-lg mx-auto px-4 py-6 space-y-5 pb-28">
       <CatalogPrivacy />
       {/* Header */}
-      <div className="text-center space-y-1">
-        <h1 className="text-2xl font-display font-bold break-words">{settings.shop_name || "Catálogo"}</h1>
-        {settings.shop_description && (
-          <p className="text-sm text-muted-foreground break-words">{settings.shop_description}</p>
-        )}
-      </div>
+      <CatalogIdentity name={settings.shop_name || 'Catálogo'} description={settings.shop_description} logoUrl={settings.logo_url} />
 
       {query.isPending && <p role="status">Cargando catálogo…</p>}
       {query.isError && <div role="alert" className="space-y-2"><p>No pudimos cargar el catálogo.</p><Button variant="outline" onClick={() => query.refetch()}>Reintentar</Button></div>}

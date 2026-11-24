@@ -6,7 +6,7 @@ const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
 const origin = process.env.APP_ORIGIN || 'http://127.0.0.1:5177';
 const api = process.env.TEST_API || 'http://127.0.0.1:54332';
 for (const url of [origin, api]) assert.equal(new URL(url).hostname, '127.0.0.1');
-const screenshots = new URL('../docs/request-discovery/screenshots/', import.meta.url).pathname;
+const screenshots = process.env.SCREENSHOTS_DIR || new URL('../docs/request-discovery/screenshots/', import.meta.url).pathname;
 await mkdir(screenshots, { recursive: true });
 await fetch(`${api}/test/reset`, { method: 'POST' });
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
@@ -58,7 +58,7 @@ try {
   assert.equal(await seller.getByRole('heading', { name: 'Solicitudes por atender' }).count(), 0);
   await shot(seller, 'home-disabled-mobile');
   await seller.getByRole('link', { name: 'Habilitar solicitudes', exact: true }).click();
-  await seller.waitForURL('**/mensajes#solicitudes-catalogo');
+  await seller.waitForURL('**/mi-catalogo#solicitudes-catalogo');
   await seller.waitForFunction(() => document.activeElement?.id === 'solicitudes-catalogo');
   const toggle = seller.getByRole('switch', { name: 'Permitir que mis clientes soliciten pedidos desde mi catálogo' });
   assert.equal(await toggle.getAttribute('aria-checked'), 'false');

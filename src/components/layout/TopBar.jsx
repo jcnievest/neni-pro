@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, Users, Package, SlidersHorizontal, BarChart3, LogOut } from "lucide-react";
+import { Menu, Users, Package, SlidersHorizontal, BarChart3, LogOut, Store } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import { trackSellerCatalog } from '@/lib/seller-catalog-tracking';
 
 const pageTitles = {
   "/": "Neni Pro",
@@ -13,13 +14,14 @@ const pageTitles = {
   "/cobros": "Cobros pendientes",
   "/entregas": "Entregas",
   "/mensajes": "Personalizar negocio",
+  "/mi-catalogo": "Mi catálogo",
   "/reporte": "Ventas y ganancias",
   "/pedidos/nuevo": "Nuevo pedido",
 };
 
 export default function TopBar() {
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
   const title = pageTitles[location.pathname] || "Neni Pro";
@@ -45,6 +47,7 @@ export default function TopBar() {
   const toggleMenu = () => setMenuOpen((open) => !open);
 
   const menuItems = [
+    { to: "/mi-catalogo", icon: Store, label: "Mi catálogo" },
     { to: "/clientes", icon: Users, label: "Clientes" },
     { to: "/productos", icon: Package, label: "Productos" },
     { to: "/mensajes", icon: SlidersHorizontal, label: "Personalizar negocio" },
@@ -82,7 +85,7 @@ export default function TopBar() {
                   key={to}
                   to={to}
                   role="menuitem"
-                  onClick={closeMenu}
+                  onClick={() => { closeMenu(); if (to === '/mi-catalogo') void trackSellerCatalog(user?.id, 'catalog_menu_opened'); }}
                   className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm outline-none transition-colors hover:bg-secondary focus:bg-secondary"
                 >
                   <Icon className="h-5 w-5 shrink-0" />

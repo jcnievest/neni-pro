@@ -26,7 +26,7 @@ test('CTA and accepted request are separate custom events, never confirmation', 
   ]);
 });
 test('catalog and request screens never emit campaign events or consume milestones',async()=>{
-  for(const pathname of ['/catalogo','/producto/opaque','/solicitud','/pedidos/solicitudes','/pedidos/solicitudes/opaque']){
+  for(const pathname of ['/catalogo','/mi-catalogo','/producto/opaque','/solicitud','/pedidos/solicitudes','/pedidos/solicitudes/opaque']){
     const {browser,analytics,events,calls}=setup();browser.location.pathname=pathname;
     analytics.trackCta('hero');analytics.trackRequest('email');
     await analytics.milestone('FirstOrderSaved',user,'private-order');

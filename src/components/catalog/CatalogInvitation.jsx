@@ -19,6 +19,6 @@ export default function CatalogInvitation() {
     <p className="text-xs leading-5 text-muted-foreground">{canShare
       ? 'Comparte tu catálogo para que tus clientes puedan enviarte solicitudes directamente.'
       : 'Activa las solicitudes en la configuración de tu catálogo para recibir pedidos de tus clientes.'}</p>
-    {canShare ? <ShareCatalogButton settings={settings} userId={user.id} /> : <Button asChild variant="outline" className="min-h-11 h-auto whitespace-normal"><Link to="/mensajes#solicitudes-catalogo"><Settings2 className="h-4 w-4" />{settings?.catalog_public === false ? 'Revisar configuración del catálogo' : 'Habilitar solicitudes'}</Link></Button>}
+    {canShare ? <ShareCatalogButton settings={settings} userId={user.id} /> : <Button asChild variant="outline" className="min-h-11 h-auto whitespace-normal"><Link to="/mi-catalogo#solicitudes-catalogo"><Settings2 className="h-4 w-4" />{settings?.catalog_public === false ? 'Revisar configuración del catálogo' : 'Habilitar solicitudes'}</Link></Button>}
   </section>;
 }

@@ -25,6 +25,7 @@ const NewOrder = lazy(() => import('@/pages/NewOrder'));
 const Payments = lazy(() => import('@/pages/Payments'));
 const Deliveries = lazy(() => import('@/pages/Deliveries'));
 const QuickMessages = lazy(() => import('@/pages/QuickMessages'));
+const MyCatalog = lazy(() => import('@/pages/MyCatalog'));
 const Report = lazy(() => import('@/pages/Report'));
 const Catalog = lazy(() => import('@/pages/Catalog'));
 const ProductPublic = lazy(() => import('@/pages/ProductPublic'));
@@ -59,6 +60,7 @@ const AuthenticatedApp = () => {
           <Route path="/cobros" element={<Payments />} />
           <Route path="/entregas" element={<Deliveries />} />
           <Route path="/mensajes" element={<QuickMessages />} />
+          <Route path="/mi-catalogo" element={<MyCatalog />} />
           <Route path="/reporte" element={<Report />} />
           <Route path="/promocionar" element={<Promote />} />
         </Route>

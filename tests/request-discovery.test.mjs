@@ -75,15 +75,15 @@ test('seller events deduplicate renders/concurrent calls/reloads, separate accou
   await Promise.all(Array.from({ length: 3 }, () => track('owner', 'order_requests_entry_viewed')));
   assert.equal(calls.length, 1);
   for (const event of SELLER_CATALOG_EVENTS) await track('owner', event);
-  assert.equal(calls.length, 4);
+  assert.equal(calls.length, SELLER_CATALOG_EVENTS.length);
   await createSellerCatalogAnalytics(b, record)('owner', 'order_requests_entry_viewed');
-  assert.equal(calls[4].p_visit, calls[0].p_visit, 'Reload reuses server deduplication key');
+  assert.equal(calls.at(-1).p_visit, calls[0].p_visit, 'Reload reuses server deduplication key');
   await track('other', 'order_requests_entry_viewed');
-  assert.notEqual(calls[5].p_visit, calls[0].p_visit);
+  assert.notEqual(calls.at(-1).p_visit, calls[0].p_visit);
   assert.ok(calls.every(call => Object.keys(call).sort().join(',') === 'p_event,p_visit'));
   assert.equal(await track(null, 'catalog_share_clicked'), false);
   assert.equal(await track('owner', 'unknown'), false);
-  assert.equal(calls.length, 6);
+  assert.equal(calls.length, SELLER_CATALOG_EVENTS.length + 2);
 });
 
 test('missing migration, failed analytics, and denied storage cannot block the seller workflow', async () => {
